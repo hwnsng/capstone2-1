@@ -20,6 +20,7 @@ function House() {
       const res = await axios.get(
         `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses?page=${page}`
       );
+      console.log(res.data);
       setHouses(res.data.houses);
     } catch (error) {
       console.error(error);
@@ -129,10 +130,11 @@ const SearchBar = styled.input`
 const HouseMenuMainBox = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 50px;
   width: 100%;
   margin-top: 40px;
 `;
+
 
 const HouseCreateBtnBox = styled.div`
   display: flex;

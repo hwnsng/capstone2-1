@@ -81,7 +81,8 @@ const useProfile = () => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-      window.location.href = '/signin';
+      alert("로그아웃 되었습니다.");
+      navigate("/");
     } catch (error) {
       alert("로그아웃 실패");
       console.error(error);

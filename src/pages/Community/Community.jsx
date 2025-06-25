@@ -8,12 +8,37 @@ import Loading from '@/components/loading/loading';
 function Community() {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryString = location.search;
+  const searchParams = new URLSearchParams(location.search);
+  const queryString = searchParams.get('category');
+
   const [searchTitle, setSearchTitle] = useState("");
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [leftInputVisible, setLeftInputVisible] = useState(false);
+  const [rightInputVisible, setRightInputVisible] = useState(false);
+  const [jumpPage, setJumpPage] = useState("");
+
+  const handleJump = (e, side) => {
+    if (e.key === "Enter") {
+      const pageNum = parseInt(jumpPage);
+      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+        setPage(pageNum);
+      }
+
+      if (side === "left") setLeftInputVisible(false);
+      if (side === "right") setRightInputVisible(false);
+      setJumpPage("");
+    }
+  };
+
+  const handleBlur = (side) => {
+    if (side === "left") setLeftInputVisible(false);
+    if (side === "right") setRightInputVisible(false);
+    setJumpPage("");
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -51,6 +76,7 @@ function Community() {
       const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/posts?page=${page - 1}`, {
         params,
       });
+      setTotalPages(res.data.totalPages);
       setPosts(res.data.content);
       setLoading(false);
     } catch (err) {
@@ -79,11 +105,11 @@ function Community() {
         <CommTitleBox>커뮤니티</CommTitleBox>
 
         <CategoryBox>
-          <CategoryItem className={queryString === "?category=1" ? "active" : ""} onClick={() => handleCategoryChange(1)}>귀촌 블로그</CategoryItem>
-          <CategoryItem className={queryString === "?category=2" ? "active" : ""} onClick={() => handleCategoryChange(2)}>귀촌 정보 공유</CategoryItem>
-          <CategoryItem className={queryString === "?category=0" ? "active" : ""} onClick={() => handleCategoryChange(0)}>전체</CategoryItem>
-          <CategoryItem className={queryString === "?category=3" ? "active" : ""} onClick={() => handleCategoryChange(3)}>귀촌 / 농사 Q&A</CategoryItem>
-          <CategoryItem className={queryString === "?category=4" ? "active" : ""} style={{ border: "none" }} onClick={() => handleCategoryChange(4)}>자유 토크</CategoryItem>
+          <CategoryItem className={queryString == "1" ? "active" : ""} onClick={() => handleCategoryChange(1)}>귀촌 블로그</CategoryItem>
+          <CategoryItem className={queryString == "2" ? "active" : ""} onClick={() => handleCategoryChange(2)}>귀촌 정보 공유</CategoryItem>
+          <CategoryItem className={queryString == "0" ? "active" : ""} onClick={() => handleCategoryChange(0)}>전체</CategoryItem>
+          <CategoryItem className={queryString == "3" ? "active" : ""} onClick={() => handleCategoryChange(3)}>귀촌 / 농사 Q&A</CategoryItem>
+          <CategoryItem className={queryString == "4" ? "active" : ""} style={{ border: "none" }} onClick={() => handleCategoryChange(4)}>자유 토크</CategoryItem>
         </CategoryBox>
 
         <SearchBox>
@@ -94,10 +120,10 @@ function Community() {
         </SearchBox>
 
         <PostListTitle>
-          <ListTitleItem style={{ width: "170px" }}>번호</ListTitleItem>
-          <ListTitleItem style={{ width: "418px", textAlign: "center" }}>카테고리</ListTitleItem>
-          <ListTitleItem style={{ width: "346px", textAlign: "center" }}>제목</ListTitleItem>
-          <ListTitleItem style={{ width: "170px" }}>작성자</ListTitleItem>
+          <ListTitleItem style={{ width: "165px" }}>번호</ListTitleItem>
+          <ListTitleItem style={{ width: "412px", textAlign: "center" }}>카테고리</ListTitleItem>
+          <ListTitleItem style={{ width: "338px", textAlign: "center" }}>제목</ListTitleItem>
+          <ListTitleItem style={{ width: "165px" }}>작성자</ListTitleItem>
           <ListTitleItem style={{ width: "100px" }}>작성일</ListTitleItem>
         </PostListTitle>
 
@@ -118,14 +144,56 @@ function Community() {
         </PostList>
 
         <CreateBtnBox>
-          <CreateBtn onClick={() => navigate('/communitycreate')} type="button" value="게시물 작성" />
+          <ComCreBtn onClick={() => navigate('/communitycreate')} type="button" value="게시물 작성" />
         </CreateBtnBox>
 
-        <Pagination>
-          <button onClick={() => setPage(page - 1)} disabled={page <= 1}>이전</button>
-          <span>{page}</span>
-          <button onClick={() => setPage(page + 1)}>다음</button>
-        </Pagination>
+        <PaginationBox>
+          {page > 3 && (
+            <>
+              <PageNumberBtn onClick={() => setPage(1)}>1</PageNumberBtn>
+              {!leftInputVisible ? (
+                <Dots onClick={() => setLeftInputVisible(true)}>...</Dots>
+              ) : (
+                <PageInput
+                  autoFocus
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={jumpPage}
+                  onChange={(e) => setJumpPage(e.target.value)}
+                  onKeyDown={(e) => handleJump(e, "left")}
+                  onBlur={() => handleBlur("left")}
+                />
+              )}
+            </>
+          )}
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => Math.abs(p - page) <= 2)
+            .map((p) => (
+              <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
+                {p}
+              </PageNumberBtn>
+            ))}
+          {page < totalPages - 2 && (
+            <>
+              {!rightInputVisible ? (
+                <Dots onClick={() => setRightInputVisible(true)}>...</Dots>
+              ) : (
+                <PageInput
+                  autoFocus
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={jumpPage}
+                  onChange={(e) => setJumpPage(e.target.value)}
+                  onKeyDown={(e) => handleJump(e, "right")}
+                  onBlur={() => handleBlur("right")}
+                />
+              )}
+              <PageNumberBtn onClick={() => setPage(totalPages)}>{totalPages}</PageNumberBtn>
+            </>
+          )}
+        </PaginationBox>
       </MainCommBox>
       {loading && <Loading />}
     </CommContainer>
@@ -138,7 +206,6 @@ const CommContainer = styled.div`
   display: flex;
   width: 99vw;
   min-height: 100vh;
-  margin: 0px auto;
   justify-content: center;
 `;
 
@@ -156,6 +223,7 @@ const CommTitleBox = styled.div`
   justify-content: center;
   font-weight: bold;
   margin-bottom: 20px;
+  color: #538572;
 `;
 
 const CategoryBox = styled.div`
@@ -231,18 +299,20 @@ const ListTitleItem = styled.div`
   display: flex;
   align-items: center;
   padding: 20px;
+  padding-left: 24px;
+  color: #538572;
+  font-weight: bold;
 `;
 
 const PostList = styled.div`
-  
 `;
 
 const PostItem = styled.div`
   display: flex;
-  margin: 10px 0;
   padding: 10px;
+  padding-top: 20px;
   border-bottom: 2px solid black;
-  height: 50px;
+  height: 60px;
   justify-content: space-between;
   cursor: pointer;
 `;
@@ -256,37 +326,61 @@ const CreateBtnBox = styled.div`
   padding-bottom: 30px;
 `;
 
-const CreateBtn = styled.input`
+const PaginationBox = styled.div`
   display: flex;
-  width: 130px;
-  height: 50px;
-  border-radius: 20px;
   justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  background-color: black;
-  color: white;
-  cursor: pointer;
-  margin: 0px 20px;
+  margin-top: 30px;
+  gap: 10px;
+  padding-bottom: 50px;
 `;
 
-const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  padding-bottom: 50px;
-
-  button {
-    background-color: #538572;
+const PageNumberBtn = styled.button`
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 10px;
+  &.active {
+    background-color: #74C69D;
     color: white;
-    border: none;
-    padding: 5px 15px;
-    margin: 0 10px;
-    cursor: pointer;
+    font-weight: bold;
   }
+`;
 
-  span {
-    font-size: 18px;
+const Dots = styled.span`
+  font-size: 18px;
+  padding: 6px 10px;
+  color: gray;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const PageInput = styled.input`
+  width: 50px;
+  height: 28px;
+  font-size: 16px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  text-align: center;
+  outline: none;
+`;
+
+const ComCreBtn = styled.input`
+  width: 130px;
+  height: 50px;
+  font-size: 20px;
+  border-radius: 20px;
+  background-color: #538572;
+  border: 1px solid #538572;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(63, 106, 89);
   }
 `;

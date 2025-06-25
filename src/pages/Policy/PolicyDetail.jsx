@@ -5,134 +5,149 @@ import Loading from '@/components/loading/loading';
 
 function PolicyDetail() {
   const [loading, setLoading] = useState(false);
-  const [policyInfo, setPolicyInfo] = useState([]);
+  const [foundPolicy, setFoundPolicy] = useState(null);
+
   const path = window.location.pathname;
-  const policyId = path.split("/")[2];
-  const fetchPolicy = async () => {
+  const rawPolicyId = path.split("/")[2];
+  const policyId = rawPolicyId.includes('?') ? rawPolicyId.split('?')[0] : rawPolicyId;
+
+  // 최대 페이지 수 (필요에 따라 조절)
+  const maxPage = 8;
+
+  const fetchPolicyByPages = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my");
-      console.log(res.data.edu_list);
-      setPolicyInfo(res.data.edu_list);
-      setLoading(false);
+      for (let page = 1; page <= maxPage; page++) {
+        const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?page=${page}`);
+        const policies = res.data.content;
+
+        // 찾는 정책이 있으면 저장하고 중단
+        const policy = policies.find(p => p.plcyNo.trim() === policyId.trim());
+        if (policy) {
+          setFoundPolicy(policy);
+          break;
+        }
+      }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchPolicy();
-  }, []);
+    if (policyId) {
+      fetchPolicyByPages();
+    }
+  }, [policyId]);
+
   return (
     <PolicyDetailContainer>
       <PolicyDetailMainBox>
         <PolicyDetailTitleBox>
-          <PolicyDetailTitle>지원 정책</PolicyDetailTitle>
+          {foundPolicy && foundPolicy.plcyNm && (
+            <PolicyDetailTitle>{foundPolicy.plcyNm}</PolicyDetailTitle>
+          )}
         </PolicyDetailTitleBox>
         <PolicyDetailInfoContainer>
           <div>
-            {policyInfo.map((policy, index) => (
-              <div key={index}>
-                {policy.title && (
+            {!foundPolicy && !loading && <div>정책 정보를 찾을 수 없습니다.</div>}
+            {foundPolicy && (
+              <>
+                {foundPolicy.plcyExplnCn && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육명</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.title}</PolicyDetailInfo>
+                    <PolicyDetailInfoTitleBox>정책 설명</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.plcyExplnCn}</PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-                {policy.chargeAgency && (
+                {foundPolicy.sprvsnInstCdNm && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>주관 기관</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.chargeAgency}</PolicyDetailInfo>
+                    <PolicyDetailInfoTitleBox>주관 부처</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.sprvsnInstCdNm}</PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-                {policy.chargeDept && (
+                {foundPolicy.operInstCdNm && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>담당 부서</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.chargeDept}</PolicyDetailInfo>
+                    <PolicyDetailInfoTitleBox>운영 기관</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.operInstCdNm}</PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-                {policy.chargeTel && (
+                {foundPolicy.plcySprtCn && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>담당 전화</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.chargeTel}</PolicyDetailInfo>
+                    <PolicyDetailInfoTitleBox>지원 내용</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.plcySprtCn}</PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-                {policy.contents && (
+                {foundPolicy.plcyAplyMthdCn && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>내용</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.contents}</PolicyDetailInfo>
+                    <PolicyDetailInfoTitleBox>신청 방법</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.plcyAplyMthdCn}</PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-                {policy.eduTarget && (
+                {foundPolicy.aplyUrlAddr && (
                   <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 대상</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduTarget}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduStDt && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 시작일</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduStDt}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduEdDt && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 종료일</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduEdDt}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.applStDt && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>신청 시작일</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.applStDt}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.applEdDt && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>신청 종료일</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.applEdDt}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduMethod && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 방식</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduMethod}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduMethod2 && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 방식 2</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduMethod2}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduMethod3 && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>교육 방식 3</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduMethod3}</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.eduCnt && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>모집 인원</PolicyDetailInfoTitleBox>
-                    <PolicyDetailInfo>{policy.eduCnt}명</PolicyDetailInfo>
-                  </PolicyDetailInfoBox>
-                )}
-                {policy.infoUrl && (
-                  <PolicyDetailInfoBox>
-                    <PolicyDetailInfoTitleBox>자세한 정보</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfoTitleBox>신청 페이지</PolicyDetailInfoTitleBox>
                     <PolicyDetailInfo>
-                      <a href={policy.infoUrl} target="_blank" rel="noopener noreferrer">{policy.infoUrl}</a>
+                      <a href={foundPolicy.aplyUrlAddr} target="_blank" rel="noopener noreferrer">
+                        {foundPolicy.aplyUrlAddr}
+                      </a>
                     </PolicyDetailInfo>
                   </PolicyDetailInfoBox>
                 )}
-              </div>
-            ))}
+                {foundPolicy.aplyYmd && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>신청 기간</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.aplyYmd}</PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {(foundPolicy.bizPrdBgngYmd || foundPolicy.bizPrdEndYmd) && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>사업 운영 기간</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>
+                      {foundPolicy.bizPrdBgngYmd || "미정"} ~ {foundPolicy.bizPrdEndYmd || "미정"}
+                    </PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {foundPolicy.srngMthdCn && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>선정 방법</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.srngMthdCn}</PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {foundPolicy.etcMttrCn && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>기타 문의</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.etcMttrCn}</PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {(foundPolicy.sprtTrgtMinAge || foundPolicy.sprtTrgtMaxAge) && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>지원 가능 연령</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>
+                      {foundPolicy.sprtTrgtMinAge || "?"}세 ~ {foundPolicy.sprtTrgtMaxAge || "?"}세
+                    </PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {foundPolicy.mclsfNm && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>대분류</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.mclsfNm}</PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+                {foundPolicy.lclsfNm && (
+                  <PolicyDetailInfoBox>
+                    <PolicyDetailInfoTitleBox>소분류</PolicyDetailInfoTitleBox>
+                    <PolicyDetailInfo>{foundPolicy.lclsfNm}</PolicyDetailInfo>
+                  </PolicyDetailInfoBox>
+                )}
+              </>
+            )}
           </div>
         </PolicyDetailInfoContainer>
       </PolicyDetailMainBox>
       {loading && <Loading />}
     </PolicyDetailContainer>
-  )
+  );
 }
 
 export default PolicyDetail;
@@ -146,6 +161,8 @@ const PolicyDetailContainer = styled.div`
 
 const PolicyDetailMainBox = styled.div`
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   margin-top: 140px;
 `;
 
@@ -158,13 +175,14 @@ const PolicyDetailTitleBox = styled.div`
 const PolicyDetailTitle = styled.h1`
   font-size: 40px;
   font-weight: bold;
+  color: #538572;
 `;
 
 const PolicyDetailInfoContainer = styled.div`
   display: flex;
   width: 100%;
   justify-content: center;
-  margin-top: 60px;
+  margin-top: 40px;
   div{
   margin: 0 auto;
   }
@@ -172,8 +190,8 @@ const PolicyDetailInfoContainer = styled.div`
 
 const PolicyDetailInfoBox = styled.div`
   display: flex;
-  width: 80%;
-  height: 120px;
+  width: 100%;
+  min-height: 120px;
   border-bottom: 1px solid black;
   border-top: 1px solid black;
 `;
@@ -181,7 +199,6 @@ const PolicyDetailInfoBox = styled.div`
 const PolicyDetailInfoTitleBox = styled.div`
   display: flex;
   width: 20%;
-  height: 100%;
   background-color: #F3F2F2;
   justify-content: center;
   align-items: center;
@@ -192,9 +209,9 @@ const PolicyDetailInfoTitleBox = styled.div`
 const PolicyDetailInfo = styled.div`
   display: flex;
   width: 80%;
-  height: 100%; 
   align-items: center;
-  justify-contenr: center;
-  padding: 0px 50px;
+  justify-content: flex-start;
+  padding: 20px 20px;
   font-size: 15px;
+  white-space: pre-wrap;
 `;

@@ -24,12 +24,14 @@ function HouseMenu({ houseImage, houseTitle, price, houseId }) {
 export default HouseMenu;
 
 const HouseMenuContainer = styled.div`
-  width: 260px;
+  width: 100%;
   height: 270px;
   border-radius: 30px;
   border: 1px solid black;
   cursor: pointer;
+  box-sizing: border-box;
 `;
+
 
 const HouseMenuImgBox = styled.div`
   display: flex;

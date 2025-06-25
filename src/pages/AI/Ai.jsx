@@ -1,30 +1,42 @@
 import styled from 'styled-components';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Loading from '@/components/loading/loading';
 
 function Ai() {
   const [userChat, setUserChat] = useState("");
-  const [userChating, setUserChating] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [aiAns, setAiAns] = useState("");
-  const [myChatReq, setMyChatReq] = useState(false);
+  const chatEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory, loading]);
 
   const SetUserChat = (e) => {
     setUserChat(e.target.value);
-  }
+  };
+
   const handleInputUser = async (e) => {
     e.preventDefault();
     if (!userChat.trim()) return;
-    setMyChatReq(true);
-    setUserChating(userChat);
+
+    const userMessage = { type: 'user', text: userChat };
+    setChatHistory(prev => [...prev, userMessage]);
+    const currentUserChat = userChat;
     setUserChat("");
     setLoading(true);
+
     try {
       const res = await axios.post(`http://127.0.0.1:8000/query`, {
-        query: userChating,
+        query: currentUserChat,
       });
-      setAiAns(res.data.answer);
+      const aiMessage = { type: 'ai', text: res.data.answer };
+      setChatHistory(prev => [...prev, aiMessage]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -35,10 +47,15 @@ function Ai() {
   return (
     <AiContainer>
       <AiMainBox>
-        <AiMainTitleBox><h1>AI 상담</h1></AiMainTitleBox>
         <AiChatBox>
-          {myChatReq && <AiChatMe><p>{userChating}</p></AiChatMe>}
-          <AiChat><p>{aiAns}</p></AiChat>
+          {chatHistory.map((msg, index) => (
+            msg.type === 'user' ? (
+              <AiChatMe key={index}><p>{msg.text}</p></AiChatMe>
+            ) : (
+              <AiChat key={index}><p>{msg.text}</p></AiChat>
+            )
+          ))}
+          <div ref={chatEndRef} />
         </AiChatBox>
       </AiMainBox>
       <AiChatInputBox>
@@ -54,103 +71,100 @@ function Ai() {
       </AiChatInputBox>
       {loading && <Loading />}
     </AiContainer>
-  )
+  );
 }
 
 export default Ai;
 
 const AiContainer = styled.div`
   display: flex;
+  flex-direction: column;
   width: 99vw;
-  justify-content: center;
+  min-height: 100vh;
+  align-items: center;
+  padding-bottom: 140px;
 `;
 
 const AiMainBox = styled.div`
-  width: 90%;
-  margin-top: 130px;
-`;
-
-const AiMainTitleBox = styled.div`
-  display: flex;
   width: 100%;
-  justify-content: center;
-  align-itmes: center;
-  h1{
-    font-size: 40px;
-    font-weight: bold;
-  }
+  max-width: 1200px;
+  margin-top: 130px;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
 `;
 
 const AiChatBox = styled.div`
-  width: 100%;
-  p{
-    font-size: 20px;
-  }
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  height: 100%;
 `;
 
 const AiChatMe = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: right;
-  align-items: center;
-  padding: 12px;
-  font-size: 20px;
-  margin: 20px 0;
-  p{
-    diaplay: flex;
+  justify-content: flex-end;
+  p {
+    display: flex;
     max-width: 65%;
-    background-color: #E9E9E9;
+    background-color: #538572;
     font-size: 18px;
+    color: #fff;
     padding: 17px;
-    justify-content: center;
-    align-items: center;
     border-radius: 50px;
   }
 `;
 
 const AiChat = styled.div`
   display: flex;
-  font-size: 20px;
-  justify-content: center;
-  p{
+  justify-content: flex-start;
+  padding: 12px;
+  margin: 10px 0;
+  p {
     max-width: 65%;
+    font-size: 18px;
+    padding: 17px;
+    border-radius: 50px;
   }
 `;
 
 const AiChatInputBox = styled.div`
-  display: flex;
   position: fixed;
+  bottom: 50px;
+  left: 0;
   width: 100vw;
-  height: 50px;
-  z-index: 1000;
+  display: flex;
   justify-content: center;
-  margin-top: 630px;
-  form{
+  z-index: 1000;
+
+  form {
     display: flex;
     width: 900px;
     align-items: center;
-    border-radius: 50px;
     border: 1px solid black;
-    input{
-      width: 95%;
-      padding-left: 17px;
+    border-radius: 50px;
+    background: white;
+    padding: 5px 10px;
+
+    input {
+      flex: 1;
       border: none;
       outline: none;
       font-size: 18px;
       border-radius: 50px;
+      padding: 10px;
     }
-    button{
-      display: flex;
-      font-size: 20px;
-      height: 40px;
-      font-weight: bold;
+
+    button {
       width: 40px;
+      height: 40px;
+      font-size: 20px;
       background-color: black;
       color: white;
-      padding: 10px;
+      border-radius: 50px;
+      display: flex;
       justify-content: center;
       align-items: center;
-      border-radius: 50px;
       cursor: pointer;
     }
   }

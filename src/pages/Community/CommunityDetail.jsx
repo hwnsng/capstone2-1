@@ -300,14 +300,15 @@ function CommunityDetail() {
         <MainCommDetailBox>
           {my && (
             <CommDetailBtnBox>
-              <button type="button" onClick={ClickedUpdate}>수정</button>
-              <button
+              <ComDetSetBtn type="button" value="수정" onClick={ClickedUpdate} />
+              <ComDetDelBtn
                 type="button"
+                value="삭제"
                 onClick={() => {
                   const confirmed = window.confirm("정말로 삭제하시겠습니까?");
                   if (confirmed) handlePostDelete();
                 }}
-              >삭제</button>
+              />
             </CommDetailBtnBox>
           )}
 
@@ -413,7 +414,7 @@ function CommunityDetail() {
       {editMode && (
         <MainCommDetailBox>
           <CommDetailBtnBox>
-            <button type="button" onClick={handlePostUpdate}>완료</button>
+            <ComDetDelBtn type="button" value="완료" onClick={handlePostUpdate} />
           </CommDetailBtnBox>
 
           <CommDetailTitleBox>
@@ -427,7 +428,7 @@ function CommunityDetail() {
           </CommDetailTitleBox>
 
           <CommDetailInfoBox>
-            <p>내용</p>
+            <p style={{ color: "#538572" }}>내용</p>
             <textarea
               value={post.content}
               onChange={(e) => setPost({ ...post, content: e.target.value })}
@@ -464,6 +465,7 @@ const CommDetailTitleBox = styled.div`
     font-size: 25px;
     font-weight: bold;
     margin-bottom: 10px;
+    color: #538572;
   }
 `;
 
@@ -581,17 +583,35 @@ const CommDetailBtnBox = styled.div`
   width: 100%;
   justify-content: end;
   align-items: center;
-  button{
-  display: flex;
-  width: 100px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid black;
-  border-radius: 50px;
-  background-color: white;
-  font-size: 17px;
-  margin-left: 30px;
+`;
+
+const ComDetSetBtn = styled.input`
+  width: 130px;
+  height: 50px;
+  font-size: 20px;
+  border-radius: 20px;
+  background-color: #fff;
+  border: 1px solid #538572;
   cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(228, 239, 235);
+  }
+`;
+
+const ComDetDelBtn = styled.input`
+  width: 130px;
+  height: 50px;
+  font-size: 20px;
+  border-radius: 20px;
+  background-color: #538572;
+  border: 1px solid #538572;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(63, 106, 89);
   }
 `;

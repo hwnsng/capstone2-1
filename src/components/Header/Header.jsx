@@ -2,11 +2,14 @@ import styled from 'styled-components';
 import Logo from '@/media/Logo.png';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import useProfile from '@/hooks/useProfile';
 
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { handleLogout, profileImage } = useProfile();
+  const profileUrl = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${profileImage}`;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -24,12 +27,25 @@ function Header() {
           <LogoImg src={Logo} alt="로고" onClick={handleLogoClick} />
         </LogoBox>
         <Nav>
-          <Link to="/policy" className={location.pathname === "/policy" ? "active" : ""}>지원 정책</Link>
+          <Link to="/policy" className={location.pathname.startsWith("/policy") ? "active" : ""}>지원 정책</Link>
           <Link to="/community?category=0" className={location.pathname.startsWith("/community") ? "active" : ""}>커뮤니티</Link>
-          <Link to="/house" className={location.pathname === "/house" ? "active" : ""}>주거 공고</Link>
+          <Link to="/house" className={location.pathname.startsWith("/house") ? "active" : ""}>주거 공고</Link>
           <Link to="/aichat" className={location.pathname === "/aichat" ? "active" : ""}>AI 상담</Link>
+          <Link to="/mentolist" className={location.pathname.startsWith("/mento") ? "active" : ""}>멘토/멘티</Link>
           {isLoggedIn ? (
-            <Link to="/profile" className={location.pathname === "/profile" ? "active" : ""}>마이페이지</Link>
+            <ProfileWrapper>
+              <Link to="/profile" className={location.pathname === "/profile" || location.pathname === "/changemento" || location.pathname === "/changepasswd" || location.pathname === "/changeemail" ? "active" : ""}>
+                <ProfileImg src={profileUrl} alt="프로필사진" />
+              </Link>
+              <LogoutText
+                onClick={() => {
+                  const confirmed = window.confirm("정말로 로그아웃 하시겠습니까?");
+                  if (confirmed) handleLogout();
+                }}
+              >
+                로그아웃
+              </LogoutText>
+            </ProfileWrapper>
           ) : (
             <Link
               to="/signin"
@@ -49,7 +65,7 @@ export default Header;
 const MainHeadContainer = styled.div`
   display: flex;
   position: fixed;
-  width: 100vw;
+  width: 99vw;
   height: 90px;
   border-bottom: 1px solid #000;
   justify-content: center;
@@ -69,7 +85,6 @@ const MainHeadBox = styled.div`
 const LogoBox = styled.div`
   display: flex;
   width: 20%;
-  justify-content: center;
   align-items: center;
 `;
 
@@ -81,10 +96,9 @@ const LogoImg = styled.img`
 
 const Nav = styled.div`
   display: flex;
-  width: 70%;
+  width: 75%;
   align-items: center;
   justify-content: space-between;
-  padding-right: 120px;
    a {
     color: black;
     text-decoration: none;
@@ -96,5 +110,27 @@ const Nav = styled.div`
       text-decoration: underline #538572;
       text-underline-offset: 4px;
     }
+  }
+`;
+const ProfileWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ProfileImg = styled.img`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+`;
+
+const LogoutText = styled.span`
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
   }
 `;

@@ -5,6 +5,8 @@ import io from 'socket.io-client';
 import Loading from '@/components/loading/loading';
 
 function Chat() {
+  const chatContentRef = useRef(null);
+  const [isAutoScroll, setIsAutoScroll] = useState(true);
   const [chatList, setChatList] = useState([]);
   const [chatUserId, setChatUserId] = useState(null);
   const [chatUserName, setChatUserName] = useState('');
@@ -25,6 +27,12 @@ function Chat() {
     socketRef.current.emit('sendChat', chatInput);
     setMessages((prev) => [...prev, { sender: 'me', message: chatInput }]);
     setChatInput('');
+
+    setTimeout(() => {
+      if (chatContentRef.current) {
+        chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
+      }
+    }, 0);
   };
 
   const getChating = async () => {
@@ -73,6 +81,13 @@ function Chat() {
   }, []);
 
   useEffect(() => {
+    if (isAutoScroll && chatContentRef.current) {
+      const el = chatContentRef.current;
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
     if (!isDataLoaded || !chatUserId || !myUserId || !localStorage.getItem('accessToken')) return;
 
     setLoading(true);
@@ -99,7 +114,7 @@ function Chat() {
         message: msg.message,
       }));
       setMessages(parsedMessages);
-      setLoading(false); // ✅ 여기서 로딩 해제
+      setLoading(false);
     });
 
     socket.on('newChat', (data) => {
@@ -147,7 +162,14 @@ function Chat() {
           <h1>{chatUserName}</h1>
         </ChatUserNameBox>
 
-        <ChatContentBox>
+        <ChatContentBox
+          ref={chatContentRef}
+          onScroll={() => {
+            const el = chatContentRef.current;
+            const isAtBottom = el.scrollHeight - el.scrollTop === el.clientHeight;
+            setIsAutoScroll(isAtBottom);
+          }}
+        >
           {messages.map((msg, idx) =>
             msg.sender === 'me' ? (
               <ChatMeBox key={idx}>
@@ -209,6 +231,7 @@ const ChatSelectBox = styled.div`
     align-items: center;
     &.active {
       background-color: #e8e8e8;
+      color: #538572;
     }
   }
 `;
@@ -224,6 +247,7 @@ const ChatUserNameBox = styled.div`
   h1 {
     font-size: 25px;
     font-weight: bold;
+    color: #538572;
   }
 `;
 
@@ -233,7 +257,7 @@ const ChatMeBox = styled.div`
   justify-content: end;
   margin-bottom: 5px;
   div {
-    background-color: #7ca8f5;
+    background-color: #538572;;
     padding: 10px 20px;
     color: white;
     border-radius: 50px;

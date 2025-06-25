@@ -102,11 +102,13 @@ function CommunityCreate() {
           />
 
           <ComCreBtnBox>
-            <ComCreBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
+            <ComCreDelBtn
+              type="button"
+              value="뒤로"
+              onClick={() => navigate(-1)} />
             <ComCreBtn
               type="submit"
               value="확인"
-              style={{ backgroundColor: '#fff', color: '#000' }}
             />
           </ComCreBtnBox>
         </form>
@@ -135,6 +137,7 @@ const FieldLabel = styled.h1`
   font-size: 17px;
   font-weight: bold;
   margin-bottom: 6px;
+  color: #538572;
 `;
 
 const Select = styled.select`
@@ -167,15 +170,36 @@ const ComCreBtnBox = styled.div`
   margin-top: 30px;
 `;
 
+const ComCreDelBtn = styled.input`
+  width: 130px;
+  height: 50px;
+  font-size: 23px;
+  border-radius: 20px;
+  background-color: #fff;
+  border: 1px solid #538572;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(228, 239, 235);
+  }
+`;
+
+
 const ComCreBtn = styled.input`
   width: 130px;
   height: 50px;
   font-size: 23px;
   border-radius: 20px;
-  background-color: black;
+  background-color: #538572;
+  border: 1px solid #538572;
   color: white;
   cursor: pointer;
   margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(63, 106, 89);
+  }
 `;
 
 const CommImageInput = styled.input`

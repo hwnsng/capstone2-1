@@ -67,9 +67,6 @@ function Banner() {
   return (
     <>
       <MainBannerContainer className="outer">
-        <BannerNextBtnBox className="button-list">
-          <button className="button-left" style={{ marginLeft: "10px" }}>←</button>
-        </BannerNextBtnBox>
         <MainBannerBox className="inner-list">
           <div className="inner">
             <img src={banner1} alt="첫번째 배너 사진" />
@@ -81,6 +78,9 @@ function Banner() {
             <img src={banner3} alt="세번째 배너 사진" />
           </div>
         </MainBannerBox>
+        <BannerNextBtnBox className="button-list">
+          <button className="button-left" style={{ marginLeft: "10px" }}>←</button>
+        </BannerNextBtnBox>
         <BannerNextBtnBox className="button-list">
           <button className="button-right" style={{ marginRight: "10px" }}>→</button>
         </BannerNextBtnBox>
@@ -136,7 +136,7 @@ const BannerNextBtnBox = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 50%;
     border: none;
     font-size: 20px;

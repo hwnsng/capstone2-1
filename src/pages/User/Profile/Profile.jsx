@@ -1,13 +1,15 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import useProfile from '@/hooks/useProfile';
 import axios from 'axios';
+import Loading from '@/components/loading/loading';
 
 function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [mentoEditBtnOn, setMentoEditBtnOn] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {
     name,
@@ -15,8 +17,7 @@ function Profile() {
     profileImage,
     handleImageUpload,
     handlePasswordChange,
-    handleEmailChange,
-    handleLogout
+    handleEmailChange
   } = useProfile();
 
   const profileUrl = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${profileImage}`;
@@ -34,6 +35,7 @@ function Profile() {
   };
 
   const handleChangeMento = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`, {
         headers: {
@@ -47,6 +49,8 @@ function Profile() {
       }
     } catch (err) {
       console.error("멘토 정보 불러오기 실패, " + err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,9 +89,9 @@ function Profile() {
           <UserInfoChangeBtn onClick={handlePasswordChange}>비밀번호 변경</UserInfoChangeBtn>
           <UserInfoChangeBtn onClick={handleFileClick}>프로필 변경</UserInfoChangeBtn>
           {mentoEditBtnOn && <UserInfoChangeBtn onClick={handleGotoMentoChange}>멘토 정보 수정/삭제</UserInfoChangeBtn>}
-          <UserInfoChangeBtn onClick={handleLogout}>로그아웃</UserInfoChangeBtn>
         </UserInfoChangeBox>
       </MainProfBox>
+      {loading && <Loading />}
     </ProfileContainer>
   );
 }

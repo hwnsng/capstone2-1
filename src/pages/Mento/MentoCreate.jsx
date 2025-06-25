@@ -56,12 +56,13 @@ export default MentoCreate;
 const MentoCreateContainer = styled.div`
   display: flex;
   width: 99vw;
-  min-height 100vh;
+  min-height: 100vh;
   justify-content: center;
 `;
 
 const MentoCreateMainBox = styled.div`
   width: 90%;
+  height: 100%;
   margin-top: 120px;
 `;
 
@@ -78,7 +79,7 @@ const MentoCreateMainTitleBox = styled.div`
 const MentoCreateBtnBox = styled.div`
   display: flex;
   width: 100%;
-  margin-top: 38px;
+  margin-top: 50px;
   margin-bottom: 40px;
   justify-content: end;
   align-items: center;
