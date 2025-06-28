@@ -34,10 +34,8 @@ const useProfile = () => {
 
     if (userId) {
       fetchProfile();
-    } else {
-      toast.error("로그인이 필요합니다.");
     }
-  }, []);
+  }, [userId]);
 
   const handleImageUpload = async (file) => {
     const formData = new FormData();
