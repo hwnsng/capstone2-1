@@ -7,6 +7,7 @@ import banner3 from '@/media/Banner3.png';
 function Banner() {
   const intervalRef = useRef(null);
   const currentIndex = useRef(1);
+
   useEffect(() => {
     const outer = document.querySelector('.outer');
     const innerList = document.querySelector('.inner-list');
@@ -49,7 +50,6 @@ function Banner() {
       clearInterval(intervalRef.current);
     };
 
-
     buttonLeft.addEventListener('click', handleLeftClick);
     buttonRight.addEventListener('click', handleRightClick);
 
@@ -64,28 +64,23 @@ function Banner() {
       stopAutoSlide();
     };
   }, []);
+
   return (
-    <>
-      <MainBannerContainer className="outer">
-        <MainBannerBox className="inner-list">
-          <div className="inner">
-            <img src={banner1} alt="첫번째 배너 사진" />
-          </div>
-          <div className="inner">
-            <img src={banner2} alt="두번째 배너 사진" />
-          </div>
-          <div className="inner">
-            <img src={banner3} alt="세번째 배너 사진" />
-          </div>
-        </MainBannerBox>
-        <BannerNextBtnBox className="button-list">
-          <button className="button-left" style={{ marginLeft: "10px" }}>←</button>
-        </BannerNextBtnBox>
-        <BannerNextBtnBox className="button-list">
-          <button className="button-right" style={{ marginRight: "10px" }}>→</button>
-        </BannerNextBtnBox>
-      </MainBannerContainer>
-    </>
+    <MainBannerContainer className="outer">
+      <MainBannerBox className="inner-list">
+        <div className="inner">
+          <img src={banner1} alt="첫번째 배너 사진" />
+        </div>
+        <div className="inner">
+          <img src={banner2} alt="두번째 배너 사진" />
+        </div>
+        <div className="inner">
+          <img src={banner3} alt="세번째 배너 사진" />
+        </div>
+      </MainBannerBox>
+      <BannerBtn className="button-left">←</BannerBtn>
+      <BannerBtn className="button-right">→</BannerBtn>
+    </MainBannerContainer>
   );
 }
 
@@ -97,49 +92,56 @@ const MainBannerContainer = styled.div`
   max-width: 1200px;
   height: 400px;
   overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 `;
 
 const MainBannerBox = styled.div`
   display: flex;
   height: 100%;
   transition: 0.6s ease-out;
-  div {
+
+  .inner {
     flex-shrink: 0;
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
+
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 20px;
     }
   }
 `;
 
-const BannerNextBtnBox = styled.div`
+const BannerBtn = styled.button`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 5;
+  transition: 0.2s;
 
-  &.button-list:first-of-type {
-    left: 10px;
+  &:hover {
+    background-color: #3b6350;
+    color: white;
   }
 
-  &.button-list:last-of-type {
-    right: 10px;
+  &.button-left {
+    left: 20px;
   }
 
-  button {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: 50%;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
+  &.button-right {
+    right: 20px;
   }
 `;

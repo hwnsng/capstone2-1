@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import axios from 'axios';
 import Loading from '@/components/loading/loading';
+import { toast } from 'react-toastify';
 
 function CommunityCreate() {
   const navigate = useNavigate();
@@ -10,31 +11,34 @@ function CommunityCreate() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const SetImage = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);
+      reader.readAsDataURL(file);
     } else {
       setImage(null);
+      setPreview(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!category) return alert('카테고리를 선택해주세요.');
-    if (!title.trim()) return alert('제목을 입력해주세요.');
-    if (!content.trim()) return alert('내용을 입력해주세요.');
+    if (!category) return toast.warning('카테고리를 선택해주세요.');
+    if (!title.trim()) return toast.warning('제목을 입력해주세요.');
+    if (!content.trim()) return toast.warning('내용을 입력해주세요.');
 
     const formData = new FormData();
     formData.append('title', title.trim());
     formData.append('content', content.trim());
     formData.append('category', category);
-    if (image) {
-      formData.append('images', image);
-    }
+    if (image) formData.append('images', image);
 
     try {
       setLoading(true);
@@ -48,13 +52,12 @@ function CommunityCreate() {
           },
         }
       );
-      alert('게시글이 등록되었습니다!');
-      setLoading(false);
       navigate('/community?category=0');
+      toast.success("게시글이 등록되었습니다.");
     } catch (err) {
       const errorMessage = err.response?.data?.message || '게시글 등록 중 오류가 발생했습니다.';
       console.error('게시글 등록 실패:', err.response?.data || err.message);
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -94,12 +97,21 @@ function CommunityCreate() {
             onChange={(e) => setContent(e.target.value)}
           />
 
-          <CommImageInput
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/gif"
-            onChange={SetImage}
-          />
+          <FieldLabel style={{ marginTop: 16 }}>이미지 (선택)</FieldLabel>
+          <UploadLabel>
+            이미지 선택
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </UploadLabel>
+
+          {preview && (
+            <ImagePreviewBox>
+              <img src={preview} alt="미리보기" />
+            </ImagePreviewBox>
+          )}
 
           <ComCreBtnBox>
             <ComCreDelBtn
@@ -130,7 +142,7 @@ const ComContainer = styled.div`
 const MainComCreBox = styled.div`
   width: 100%;
   max-width: 1200px;
-  margin-top: 110px;
+  margin-top: 120px;
 `;
 
 const FieldLabel = styled.h1`
@@ -163,11 +175,37 @@ const ComCreDetailInput = styled.textarea`
   border: 1px solid black;
 `;
 
+const UploadLabel = styled.label`
+  display: inline-block;
+  font-size: 14px;
+  background-color: #538572;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 8px;
+  input {
+    display: none;
+  }
+`;
+
+const ImagePreviewBox = styled.div`
+  margin-top: 12px;
+  img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+  }
+`;
+
 const ComCreBtnBox = styled.div`
   display: flex;
   width: 100%;
   justify-content: end;
   margin-top: 30px;
+  padding-bottom: 40px;
 `;
 
 const ComCreDelBtn = styled.input`
@@ -185,7 +223,6 @@ const ComCreDelBtn = styled.input`
   }
 `;
 
-
 const ComCreBtn = styled.input`
   width: 130px;
   height: 50px;
@@ -200,10 +237,4 @@ const ComCreBtn = styled.input`
   &:hover{
     background-color:rgb(63, 106, 89);
   }
-`;
-
-const CommImageInput = styled.input`
-  display: flex;
-  font-size: 15px;
-  margin-top: 16px;
 `;

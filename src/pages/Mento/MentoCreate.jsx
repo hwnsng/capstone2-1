@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Loading from '@/components/loading/loading';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 function MentoCreate() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function MentoCreate() {
         }
       });
       setIntroduce(response.data.content);
-      alert("멘토 등록이 완료되었습니다");
+      toast.success("멘토 등록이 완료되었습니다");
       setLoading(false);
       navigate("/mentolist");
     } catch (err) {
@@ -42,8 +43,8 @@ function MentoCreate() {
           onChange={(e) => setIntroduce(e.target.value)}
         />
         <MentoCreateBtnBox>
-          <MentoCreateBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
-          <MentoCreateBtn type="submit" value="확인" onClick={introducePosts} style={{ backgroundColor: "#fff", color: "#000" }} />
+          <MentoCreBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
+          <MentoDelBtn type="submit" value="확인" onClick={introducePosts} />
         </MentoCreateBtnBox>
       </MentoCreateMainBox>
       {loading && <Loading />}
@@ -55,55 +56,74 @@ export default MentoCreate;
 
 const MentoCreateContainer = styled.div`
   display: flex;
-  width: 99vw;
-  min-height: 100vh;
   justify-content: center;
+  padding: 120px 20px 60px;
+  min-height: 100vh;
 `;
 
 const MentoCreateMainBox = styled.div`
-  width: 90%;
-  height: 100%;
-  margin-top: 120px;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 40px;
 `;
 
 const MentoCreateMainTitleBox = styled.div`
-  display: flex;
-  width: 100%;
-  align-items: center;
-  h1{
-    font-size: 25px;
+  h1 {
+    font-size: 28px;
     font-weight: bold;
+    color: #538572;
+    margin-bottom: 20px;
+  }
+`;
+
+const MentoCreateInfoInput = styled.textarea`
+  width: 100%;
+  height: 300px;
+  font-size: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #a7c8b7;
+  resize: none;
+  background: #fff;
+  outline: none;
+  transition: box-shadow 0.2s;
+  &:focus {
+    border-color: #538572;
+    box-shadow: 0 0 0 3px rgba(59, 99, 80, 0.2);
   }
 `;
 
 const MentoCreateBtnBox = styled.div`
   display: flex;
-  width: 100%;
-  margin-top: 50px;
-  margin-bottom: 40px;
-  justify-content: end;
-  align-items: center;
-`;
-
-const MentoCreateBtn = styled.input`
-  display: flex;
-  width: 130px;
-  height: 50px;
-  border-radius: 20px;
-  justify-content: center;
-  align-items: center;
-  font-size: 23px;
-  background-color: black;
-  color: white;
-  cursor: pointer;
-  margin: 0px 20px;
-`;
-
-const MentoCreateInfoInput = styled.textarea`
-  width: 100%;
-  height: 400px;
+  justify-content: flex-end;
+  gap: 12px;
   margin-top: 30px;
-  font-size: 20px;
-  padding: 20px;
-  border: 1px solid black;
+`;
+
+const ButtonBase = styled.input`
+  width: 120px;
+  height: 48px;
+  font-size: 18px;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+`;
+
+const MentoCreBtn = styled(ButtonBase)`
+  background-color: white;
+  border-color: #538572;
+  color: #538572;
+  &:hover {
+    background-color: #e6f3ec;
+  }
+`;
+
+const MentoDelBtn = styled(ButtonBase)`
+  background-color: #538572;
+  border-color: #538572;
+  color: white;
+  &:hover {
+    background-color: #2c4f3f;
+  }
 `;

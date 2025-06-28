@@ -158,7 +158,7 @@ const MainContainer = styled.div`
 
 const MainBox = styled.div`
   width: 100%;
-  margin-top: 140px;
+  margin-top: 120px;
   max-width: 1200px;
 `;
 

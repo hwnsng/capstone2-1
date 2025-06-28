@@ -59,7 +59,8 @@ const MentoListContainer = styled.div`
 `;
 
 const MentoListMainBox = styled.div`
-  width: 80%;
+  width: 100%;
+  max-width: 1200px;
   margin-top: 120px;
 `;
 
@@ -67,18 +68,19 @@ const MentoListBtnBox = styled.div`
   display: flex;
   width: 100%;
   height: 60px;
-  justify-content: space-between;
+  justify-content: right;
   align-items: center;
   button{
     display: flex;
-    width: 200px;
+    width: 140px;
     height: 40px;
     justify-content: center;
     align-items: center;
-    border: 1px solid black;
+    border: 1px solid rgb(54, 98, 81);
     border-radius: 30px;
-    background-color: white;
-    font-size: 20px;
+    background-color:rgb(54, 98, 81);
+    color: white; 
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
   }
@@ -91,3 +93,4 @@ const MentoListMenuBox = styled.div`
   width: 100%;
   margin-top: 20px;
 `;
+

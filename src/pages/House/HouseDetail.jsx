@@ -3,93 +3,32 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import useProfile from '@/hooks/useProfile';
+import { toast } from 'react-toastify';
 
 function HouseDetail() {
   const { name } = useProfile();
-  const [subHouse, setSubHouse] = useState(0);
   const [house, setHouse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [my, setMy] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [subImageIndex, setSubImageIndex] = useState(0);
   const { id: HouseId } = useParams();
   const navigate = useNavigate();
-  const [editTitle, setEditTitle] = useState();
-  const [editContent, setEditContent] = useState();
-  const [editRegion, setEditRegion] = useState();
-  const [editPrice, setEditPrice] = useState();
+
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editRegion, setEditRegion] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+
+  useEffect(() => {
+    fetchHouse();
+  }, [HouseId]);
 
   useEffect(() => {
     if (name && house?.authorName) {
       setMy(name === house.authorName);
     }
   }, [name, house]);
-
-  useEffect(() => {
-    fetchHouse();
-  }, [HouseId]);
-
-  const fetchHouse = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`
-      );
-      setHouse(res.data.house);
-      setLoading(false);
-    } catch (error) {
-      console.error('데이터 가져오기 실패:', error);
-      setError('집 정보를 불러오지 못했습니다.');
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = () => {
-    setEditMode(true);
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await axios.put(
-        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`,
-        { title: editTitle, content: editContent, region: editRegion, price: editPrice },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          }
-        }
-      );
-      alert('수정이 완료되었습니다.');
-      setEditMode(false);
-      fetchHouse();
-    } catch (err) {
-      console.log(err);
-      alert('수정에 실패했습니다.');
-    }
-  };
-
-  const handleDel = async () => {
-    const confirmDel = window.confirm('정말로 삭제하시겠습니까?');
-    if (!confirmDel) return;
-
-    try {
-      await axios.delete(
-        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-          }
-        }
-      );
-      alert('삭제가 완료되었습니다.');
-      navigate('/house');
-    } catch (err) {
-      console.log(err);
-      alert('삭제에 실패했습니다.');
-    }
-  };
 
   useEffect(() => {
     if (house) {
@@ -100,433 +39,354 @@ function HouseDetail() {
     }
   }, [house]);
 
-  if (loading) return <HouseDetailContainer>로딩 중...</HouseDetailContainer>;
-  if (error || !house) return <HouseDetailContainer>{error || '집 정보를 찾을 수 없습니다.'}</HouseDetailContainer>;
+  const fetchHouse = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`
+      );
+      setHouse(res.data.house);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      toast.error('집 정보를 불러오는 데 실패했습니다.');
+      setLoading(false);
+    }
+  };
 
-  const mainImageUrl = house
-    ? `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${house.mainImage}`
-    : '';
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(
+        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`,
+        {
+          title: editTitle,
+          content: editContent,
+          region: editRegion,
+          price: editPrice,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+      toast.success('수정이 완료되었습니다.');
+      setEditMode(false);
+      fetchHouse();
+    } catch (err) {
+      console.error(err);
+      toast.error('수정에 실패했습니다.');
+    }
+  };
+
+  const confirmDelete = () => {
+    toast.info(
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <span style={{ marginBottom: '10px' }}>정말로 삭제하시겠습니까?</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={async () => {
+              toast.dismiss();
+              try {
+                await axios.delete(
+                  `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    },
+                  }
+                );
+                toast.success('삭제가 완료되었습니다.');
+                navigate('/house');
+              } catch (err) {
+                console.error(err);
+                toast.error('삭제에 실패했습니다.');
+              }
+            }}
+            style={{
+              backgroundColor: '#538572',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            확인
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{
+              backgroundColor: '#ccc',
+              color: '#333',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            취소
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        hideProgressBar: true,
+        closeButton: false,
+      }
+    );
+  };
+
+  if (loading) return <Container>로딩 중...</Container>;
+  if (!house) return <Container>집 정보를 찾을 수 없습니다.</Container>;
 
   return (
-    <HouseDetailContainer>
-      {!editMode &&
-        <HouseDetailMainBox>
-          <HouseDetailTopBox>
+    <Container>
+      {!editMode ? (
+        <>
+          <MainImage>
+            <img src={house.mainImage} alt="메인 이미지" />
             {my && (
-              <HouseEditDelBtnBox>
-                <button onClick={handleEdit}>수정</button>
-                <button onClick={handleDel}>삭제</button>
-              </HouseEditDelBtnBox>
+              <EditButtonWrap>
+                <button onClick={() => setEditMode(true)}>수정</button>
+                <button onClick={confirmDelete}>삭제</button>
+              </EditButtonWrap>
             )}
-            <HouseDetailMainImgBox>
-              <img src={mainImageUrl} alt="메인 사진" />
-            </HouseDetailMainImgBox>
-            <HouseDetailInfoContainer>
-              <div>
-                <HouseDetailInfoBox>
-                  <HouseDetailInfoTitleBox>제목</HouseDetailInfoTitleBox>
-                  <HouseDetailInfo>
-                    {house.title}
-                  </HouseDetailInfo>
-                </HouseDetailInfoBox>
+          </MainImage>
 
-                <HouseDetailInfoBox>
-                  <HouseDetailInfoTitleBox>내용</HouseDetailInfoTitleBox>
-                  <HouseDetailInfo>
-                    {house.content}
-                  </HouseDetailInfo>
-                </HouseDetailInfoBox>
+          <ContentBox>
+            <DetailCard>
+              <label>제목</label>
+              <div style={{ color: 'black' }}>{house.title}</div>
+            </DetailCard>
+            <DetailCard>
+              <label>내용</label>
+              <div style={{ color: 'black' }}>{house.content}</div>
+            </DetailCard>
+            <DetailCard>
+              <label>지역</label>
+              <div style={{ color: 'black' }}>{house.region}</div>
+            </DetailCard>
+            <DetailCard>
+              <label>가격</label>
+              <div style={{ color: 'black' }}>{house.price}</div>
+            </DetailCard>
+            <DetailCard>
+              <label>작성자</label>
+              <div style={{ color: 'black' }}>{house.authorName}</div>
+            </DetailCard>
+          </ContentBox>
 
-                <HouseDetailInfoBox>
-                  <HouseDetailInfoTitleBox>지역</HouseDetailInfoTitleBox>
-                  <HouseDetailInfo>
-                    {house.region}
-                  </HouseDetailInfo>
-                </HouseDetailInfoBox>
-
-                <HouseDetailInfoBox>
-                  <HouseDetailInfoTitleBox>가격</HouseDetailInfoTitleBox>
-                  <HouseDetailInfo>
-                    {house.price}
-                  </HouseDetailInfo>
-                </HouseDetailInfoBox>
-
-                <HouseDetailInfoBox>
-                  <HouseDetailInfoTitleBox>작성자</HouseDetailInfoTitleBox>
-                  <HouseDetailInfo>{house.authorName}</HouseDetailInfo>
-                </HouseDetailInfoBox>
-              </div>
-            </HouseDetailInfoContainer>
-          </HouseDetailTopBox>
-
-          <HouseDetailBottomContainer>
-            <HouseDetailBottomBox>
-              <HouseDetailSubImgBox>
-                {house.insideImages && house.insideImages[subHouse] ? (
-                  <img
-                    src={`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${house.insideImages[subHouse]}`}
-                    alt={`서브 사진 ${subHouse + 1}`}
-                  />
-                ) : (
-                  <div>이미지를 찾을 수 없습니다.</div>
-                )}
-              </HouseDetailSubImgBox>
-              <HouseDetailSubImgBtnBox>
-                {house.insideImages?.map((_, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setSubHouse(index)}
-                    className={subHouse === index ? 'active' : ''}
-                  >
-                    서브 사진 {index + 1}
-                  </button>
-                ))}
-              </HouseDetailSubImgBtnBox>
-            </HouseDetailBottomBox>
-          </HouseDetailBottomContainer>
-        </HouseDetailMainBox>
-      }
-      {editMode &&
-        <HouseDetailMainBox>
-          <form onSubmit={handleEditSubmit} encType="multipart/form-data">
-            <HouseCreInfoContainer>
-              <div>
-                <HouseCreInfoTopTitleBox>
-                  <h1>상세 정보</h1>
-                </HouseCreInfoTopTitleBox>
-
-                <HouseCreInfoBox>
-                  <HouseCreInfoTitleBox>제목</HouseCreInfoTitleBox>
-                  <HouseCreInfo>
-                    <input
-                      type="text"
-                      placeholder="제목을 입력하세요."
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                    />
-                  </HouseCreInfo>
-                </HouseCreInfoBox>
-
-                <HouseCreInfoBox>
-                  <HouseCreInfoTitleBox>내용</HouseCreInfoTitleBox>
-                  <HouseCreInfo>
-                    <input
-                      placeholder="내용을 입력하세요."
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                    />
-                  </HouseCreInfo>
-                </HouseCreInfoBox>
-
-                <HouseCreInfoBox>
-                  <HouseCreInfoTitleBox>지역</HouseCreInfoTitleBox>
-                  <HouseCreInfo>
-                    <select
-                      value={editRegion}
-                      onChange={(e) => setEditRegion(e.target.value)}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        fontSize: '16px',
-                        paddingLeft: '20px',
-                        border: 'none',
-                        backgroundColor: 'white',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="">지역을 선택하세요</option>
-                      <option value="봉양면">봉양면</option>
-                    </select>
-                  </HouseCreInfo>
-                </HouseCreInfoBox>
-
-                <HouseCreInfoBox>
-                  <HouseCreInfoTitleBox>가격</HouseCreInfoTitleBox>
-                  <HouseCreInfo>
-                    <input
-                      type="text"
-                      placeholder="가격을 입력하세요."
-                      value={editPrice}
-                      onChange={(e) => setEditPrice(e.target.value)}
-                    />
-                  </HouseCreInfo>
-                </HouseCreInfoBox>
-              </div>
-            </HouseCreInfoContainer>
-
-            <HouseCreBtnBox>
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                style={{ backgroundColor: 'white', color: "black" }}
-              >
-                뒤로
-              </button>
-              <button
-                type="submit"
-                style={{ backgroundColor: 'black', color: 'white' }}
-              >
-                수정
-              </button>
-            </HouseCreBtnBox>
-          </form>
-        </HouseDetailMainBox>
-      }
-    </HouseDetailContainer >
+          <SubImageSection>
+            <img
+              src={house.insideImages?.[subImageIndex]}
+              alt="서브 이미지"
+              className="main"
+            />
+            <div className="thumbs">
+              {house.insideImages?.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`서브 ${i}`}
+                  className={subImageIndex === i ? 'active' : ''}
+                  onClick={() => setSubImageIndex(i)}
+                />
+              ))}
+            </div>
+          </SubImageSection>
+        </>
+      ) : (
+        <form onSubmit={handleEditSubmit} style={{ width: '100%', height: '100vh' }}>
+          <ContentBox style={{ marginTop: '50px' }}>
+            제목
+            <StyledInput
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              placeholder="제목을 입력하세요"
+            />
+            내용
+            <StyledInput
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              placeholder="내용을 입력하세요"
+            />
+            지역
+            <StyledSelect
+              value={editRegion}
+              onChange={(e) => setEditRegion(e.target.value)}
+            >
+              <option value="다인면">다인면</option>
+              <option value="안사면">안사면</option>
+              <option value="신평면">신평면</option>
+              <option value="안평면">안평면</option>
+              <option value="안계면">안계면</option>
+              <option value="단북면">단북면</option>
+              <option value="단밀면">단밀면</option>
+              <option value="구천면">구천면</option>
+              <option value="비안면">비안면</option>
+              <option value="봉양면">봉양면</option>
+              <option value="의성읍">의성읍</option>
+              <option value="단촌면">단촌면</option>
+              <option value="점곡면">점곡면</option>
+              <option value="옥산면">옥산면</option>
+              <option value="사곡면">사곡면</option>
+              <option value="금성면">금성면</option>
+              <option value="가음면">가음면</option>
+              <option value="춘산면">춘산면</option>
+            </StyledSelect>
+            가격
+            <StyledInput
+              value={editPrice}
+              onChange={(e) => setEditPrice(e.target.value)}
+              placeholder="가격을 입력하세요"
+            />
+            <EditSubmitBtnBox>
+              <button type="button" onClick={() => setEditMode(false)} style={{ backgroundColor: "#ffffff", color: "black" }}>취소</button>
+              <button type="submit">수정 완료</button>
+            </EditSubmitBtnBox>
+          </ContentBox>
+        </form>
+      )}
+    </Container>
   );
 }
+
 export default HouseDetail;
 
-const HouseDetailContainer = styled.div`
-  display: flex;
-  width: 99vw;
-  justify-content: center;
+const Container = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 140px 20px 60px;
   min-height: 100vh;
-  padding-bottom: 80px;
 `;
 
-const HouseDetailMainBox = styled.div`
-  width: 100%;
-  max-width: 1200px;
-  margin-top: 130px;
-`;
-
-const HouseDetailTopBox = styled.div`
-  width: 100%;
-  justify-content: space-between;
-`;
-
-const HouseDetailMainImgBox = styled.div`
-  width: 100%;
-  height: 700px;
-  border: 1px solid black;
-  margin-bottom: 20px;
-  img{
-    display: flex;
-    width: 100%;
-    height: 100%;
+const EditButtonWrap = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  button {
+    margin-left: 10px;
+    background: #538572;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
   }
 `;
 
-const HouseDetailInfoContainer = styled.div`
+const ContentBox = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: center;
-  div{
-    width: 100%;
-  margin: 0;
-  }
-`;
-
-const HouseDetailInfoBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 70px;
-  border-bottom: 1px solid black;
-  border-top: 1px solid black;
-`;
-
-const HouseDetailInfoTitleBox = styled.div`
-  flex: 1;
-  height: 100%;
-  background-color: #F3F2F2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 17px;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 40px;
+  color: #538572;
   font-weight: bold;
 `;
 
-const HouseDetailInfo = styled.div`
-  flex: 4;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px 30px;
-  font-size: 16px;
-`;
-
-const HouseDetailBottomContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: 500px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const HouseDetailBottomBox = styled.div`
-  width: 100%;
-  height: 400px;
-`;
-
-const HouseDetailSubImgBox = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 400px;
-  img{
-    display: flex;
-    width: 50%;
-    height: 80%;
+const DetailCard = styled.div`
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9f9f9;
+  label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #538572;
   }
 `;
 
-const HouseDetailSubImgBtnBox = styled.div`
+const EditSubmitBtnBox = styled.div`
   display: flex;
   width: 100%;
-  height: 40px;
-  align-items: center;
-  margin-top: 40px;
-  justify-content: center;
-  button{
-    display: flex;
-    width: 150px;
-    height: 30px;
-    padding: 20px;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: right;
+  button {
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: none;
     font-size: 16px;
-    font-weight: bold;
-    background-color: #C6C6C6;
-    color: white;
-    border-radius: 40px;
-    border: 1px solid black;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
     cursor: pointer;
-    &.active{
-      background-color: black;
+    border: 1px solid #538572;
+    background-color: #538572;
+    color: white;
+  }
+`;
+
+const MainImage = styled.div`
+  position: relative;
+  img {
+    width: 100%;
+    max-height: 600px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+`;
+
+const SubImageSection = styled.div`
+  margin-top: 40px;
+
+  img.main {
+    width: 60%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .thumbs {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    overflow-x: auto;
+    img {
+      width: 80px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.2s;
+    }
+
+    img.active {
+      border: 2px solid #3b6350;
+      opacity: 1;
+      transform: scale(1.05);
     }
   }
 `;
 
-const HouseEditDelBtnBox = styled.div`
-  display: flex;
+const StyledInput = styled.input`
   width: 100%;
-  min-height: 100px;
-  justify-content: right;
-  align-items: center;
-  button{
-    display: flex;
-    width: 100px;
-    height: 40px;
-    font-size: 20px;
-    font-weight: bold;
-    border: 1px solid black;
-    border-radius: 100px;
-    background-color: white;
-    justify-content: center;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-  }
-`;
-
-const HouseCreImgBox = styled.div`
-  width: 100%;
-  height: 100px;
-  align-items: center;
-`;
-
-const HouseCreTitleBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  h1 {
-    font-size: 20px;
-    font-weight: bold;
-  }
-`;
-
-const HouseCreImgInputBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  input {
-    font-size: 16px;
-  }
-`;
-
-const HouseCreInfoContainer = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  div {
-    width: 100%;
-    margin: 0;
-  }
-`;
-
-const HouseCreInfoTopTitleBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 40px;
-  h1 {
-    font-size: 20px;
-    font-weight: bold;
-  }
-`;
-
-const HouseCreInfoBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 70px;
-  border-bottom: 1px solid black;
-  border-top: 1px solid black;
-`;
-
-const HouseCreInfoTitleBox = styled.div`
-  flex: 1;
-  height: 100%;
-  background-color: #f3f2f2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 12px 16px;
   font-size: 16px;
-  font-weight: bold;
-`;
-
-const HouseCreInfo = styled.div`
-  flex: 4;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px 30px;
-  font-size: 14px;
-  input {
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    padding-left: 20px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  outline: none;
+  transition: border 0.2s;
+  &:focus {
+    border-color: #3b6350;
+    box-shadow: 0 0 0 2px rgba(59, 99, 80, 0.2);
   }
 `;
 
-
-const HouseCreBtnBox = styled.div`
-  display: flex;
+const StyledSelect = styled.select`
   width: 100%;
-  height: 50px;
-  justify-content: end;
-  margin-top: 30px;
-  button {
-    display: flex;
-    background-color: black;
-    color: white;
-    width: 120px;
-    height: 45px;
-    padding: 10px;
-    font-size: 22px;
-    border-radius: 30px;
-    border: 1px solid black;
-    margin-left: 20px;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: white;
+  outline: none;
+  transition: border 0.2s;
+  &:focus {
+    border-color: #3b6350;
+    box-shadow: 0 0 0 2px rgba(59, 99, 80, 0.2);
   }
 `;

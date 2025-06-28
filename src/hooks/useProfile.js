@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const useProfile = () => {
   const navigate = useNavigate();
@@ -27,14 +28,14 @@ const useProfile = () => {
         setProfileImage((response.data.userInfo.profile_image).toString());
       } catch (error) {
         console.error('프로필 정보 불러오기 실패', error);
-        alert('프로필 정보를 불러오는 데 실패했습니다.');
+        toast.error('프로필 정보를 불러오는 데 실패했습니다.');
       }
     };
 
     if (userId) {
       fetchProfile();
     } else {
-      alert("로그인이 필요합니다.");
+      toast.error("로그인이 필요합니다.");
     }
   }, []);
 
@@ -54,11 +55,11 @@ const useProfile = () => {
         }
       );
       setProfileImage(response.data.profileImagePath);
-      alert("프로필 사진을 변경했습니다");
+      toast.success("프로필 사진을 변경했습니다");
       navigate("/profile");
     } catch (error) {
       console.error('프로필 이미지 업로드 실패:', error);
-      alert("이미지 업로드에 실패했습니다.");
+      toast.error("이미지 업로드에 실패했습니다.");
     }
   };
 
@@ -81,10 +82,10 @@ const useProfile = () => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-      alert("로그아웃 되었습니다.");
+      toast.success("로그아웃 되었습니다.");
       navigate("/");
     } catch (error) {
-      alert("로그아웃 실패");
+      toast.error("로그아웃 실패");
       console.error(error);
     }
   };

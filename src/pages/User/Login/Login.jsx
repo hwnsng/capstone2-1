@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import Loading from '@/components/loading/loading';
+import { toast } from 'react-toastify';
 
 function Login() {
   const navigate = useNavigate();
@@ -16,11 +17,11 @@ function Login() {
     e.preventDefault();
     const result = await login(email, password);
     if (result.success) {
-      alert("로그인 되었습니다!");
       setLoading(false);
       navigate("/");
+      toast.success("로그인 되었습니다!");
+      window.location.reload();
     } else {
-      alert("로그인 실패: " + result.error);
       setLoading(false);
     }
   };
@@ -44,13 +45,12 @@ function Login() {
           </LoginInputBox>
           <LoginBtnBox>
             <LoginBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
-            <LoginBtn type="submit" value="로그인" style={{ backgroundColor: "#fff", color: "#000" }} />
+            <LoginBtn type="submit" value="로그인" />
           </LoginBtnBox>
         </form>
         <LoginBottomMainBox>
           <LoginBotBox>
             <LoginBotMenu>
-              <p>비밀번호를 잊으셨다면, <span onClick={() => navigate('/changepasswd')}>여기</span>를 눌러주세요.</p>
               <p>회원가입은 <span onClick={() => navigate('/signup')}>여기</span>에서 할 수 있습니다.</p>
             </LoginBotMenu>
           </LoginBotBox>
@@ -68,7 +68,6 @@ const LoginContainer = styled.div`
   width: 99vw;
   min-height: 100vh;
   justify-content: center;
-  align-items: center;
 `;
 const MainLoginBox = styled.div`
   justify-content: center;
@@ -78,11 +77,11 @@ const MainLoginBox = styled.div`
 `;
 const LoginTitle = styled.h1`
   display: flex;
-  width: 100%;
   justify-content: center;
   font-size: 40px;
   font-weight: bold;
   margin: 30px 0px;
+  color: #538572;
 `;
 const LoginInputBox = styled.div`
   display: flex;
@@ -101,15 +100,20 @@ const LoginInputTitleBox = styled.div`
 const LoginInputTitle = styled.p`
   font-size: 23px;
   font-weight: bold;
+  color: #538572;
 `;
 const LoginInput = styled.input`
   width: 60%;
-  height: 40px;
+  height: 45px;
   font-size: 18px;
   padding-left: 15px;
-  border-radius: 10px;
-  border: 1px solid black;
+  border-radius: 8px;
+  border: 1px solid #ccc;
   outline: none;
+  transition: border-color 0.2s ease;
+  &:focus {
+    border-color: #538572;
+  }
 `;
 const LoginBtnBox = styled.div`
   display: flex;
@@ -122,14 +126,52 @@ const LoginBtn = styled.input`
   display: flex;
   width: 130px;
   height: 50px;
-  border-radius: 20px;
+  border-radius: 25px;
   justify-content: center;
   align-items: center;
   font-size: 23px;
-  background-color: black;
   color: white;
   cursor: pointer;
   margin: 0px 20px;
+  background-color: #538572;
+  border: none;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #406a5b;
+  }
+
+  &:first-child {
+    background-color: white;
+    color: #538572;
+    border: 2px solid #538572;
+  }
+
+  &:first-child:hover {
+    background-color: #f5f5f5;
+  }
+`;
+const LoginBotMenu = styled.div`
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+
+  p {
+    font-size: 14px;
+    margin-top: 10px;
+
+    span {
+      font-weight: bold;
+      color: #538572;
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #406a5b;
+        text-decoration: underline;
+      }
+    }
+  }
 `;
 const LoginBottomMainBox = styled.div`
   display: flex;
@@ -143,17 +185,4 @@ const LoginBotBox = styled.div`
   margin-top: 30px;
   justify-content: center;
   align-items: center;
-`;
-const LoginBotMenu = styled.div`
-  display: block;
-  margin-top: 20px;
-  p{
-    font-size: 14px;
-    margin-top: 10px;
-    span{
-      font-weight: bold;
-      color: #004F94;
-      cursor: pointer;
-    }
-  }
 `;

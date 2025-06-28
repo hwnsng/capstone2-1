@@ -10,8 +10,6 @@ function PolicyDetail() {
   const path = window.location.pathname;
   const rawPolicyId = path.split("/")[2];
   const policyId = rawPolicyId.includes('?') ? rawPolicyId.split('?')[0] : rawPolicyId;
-
-  // 최대 페이지 수 (필요에 따라 조절)
   const maxPage = 8;
 
   const fetchPolicyByPages = async () => {
@@ -20,8 +18,6 @@ function PolicyDetail() {
       for (let page = 1; page <= maxPage; page++) {
         const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?page=${page}`);
         const policies = res.data.content;
-
-        // 찾는 정책이 있으면 저장하고 중단
         const policy = policies.find(p => p.plcyNo.trim() === policyId.trim());
         if (policy) {
           setFoundPolicy(policy);
@@ -154,64 +150,74 @@ export default PolicyDetail;
 
 const PolicyDetailContainer = styled.div`
   display: flex;
-  width: 99vw;
+  justify-content: center;
+  width: 100%;
   min-height: 100vh;
-  padding-bottom: 100px;
+  padding: 60px 20px 100px;
 `;
 
 const PolicyDetailMainBox = styled.div`
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  margin-top: 140px;
+  margin-top: 80px;
+  max-width: 1000px;
 `;
 
 const PolicyDetailTitleBox = styled.div`
   display: flex;
-  width: 100%;
   justify-content: center;
+  margin-bottom: 40px;
 `;
 
 const PolicyDetailTitle = styled.h1`
-  font-size: 40px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
   color: #538572;
+  text-align: center;
 `;
 
 const PolicyDetailInfoContainer = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: center;
-  margin-top: 40px;
-  div{
-  margin: 0 auto;
-  }
+  flex-direction: column;
+  gap: 20px;
 `;
 
 const PolicyDetailInfoBox = styled.div`
   display: flex;
-  width: 100%;
-  min-height: 120px;
-  border-bottom: 1px solid black;
-  border-top: 1px solid black;
+  flex-direction: row;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 `;
 
 const PolicyDetailInfoTitleBox = styled.div`
+  width: 25%;
+  min-height: 100px;
+  background-color: #eaf1ed;
+  color: #2f4f4f;
+  font-weight: 600;
+  font-size: 16px;
   display: flex;
-  width: 20%;
-  background-color: #F3F2F2;
-  justify-content: center;
   align-items: center;
-  font-size: 18px;
-  font-weight: bold;
+  justify-content: center;
+  padding: 16px;
 `;
 
 const PolicyDetailInfo = styled.div`
   display: flex;
-  width: 80%;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px 20px;
+  width: 75%;
+  padding: 16px 20px;
   font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  word-break: break-word;
   white-space: pre-wrap;
+  align-items: center;
+  a {
+    color: #538572;
+    text-decoration: underline;
+    &:hover {
+      color: #3b6350;
+    }
+  }
 `;

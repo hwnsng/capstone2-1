@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/loading/loading';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MentoDetail() {
   const navigate = useNavigate();
@@ -13,13 +14,11 @@ function MentoDetail() {
   const [loading, setLoading] = useState(false);
   const path = window.location.pathname;
   const mentoId = path.split("/")[2];
-  const mentoProfileUrl = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/static/profile/${mentoProfile}`;
 
   const getMentos = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`, {
-      });
+      const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`);
       for (let i = 0; i < res.data.length; i++) {
         if (res.data[i].mentor_id == mentoId) {
           setMentoName(res.data[i].mentor_name);
@@ -36,26 +35,55 @@ function MentoDetail() {
   };
 
   const handleChatGo = async () => {
-    try {
-      const res = await axios.post(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`, {
-        mentor_id: parseInt(mentoId),
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        }
-      })
-      if (res.data.statusCode == 400) {
-        alert(res.data.message);
-      } else {
-        navigate('/chat');
+    toast.info(
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <span style={{ marginBottom: '10px' }}>채팅을 시작하시겠습니까?</span>
+        <div>
+          <button
+            onClick={async () => {
+              toast.dismiss();
+              try {
+                const res = await axios.post(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`, {
+                  mentor_id: parseInt(mentoId),
+                }, {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                  }
+                });
+                if (res.data.statusCode == 400) {
+                  toast.success(res.data.message);
+                } else {
+                  navigate('/chat');
+                }
+              } catch (err) {
+                if (err.status == 401) {
+                  toast.error("로그인이 필요한 서비스입니다");
+                }
+                console.error(err);
+              }
+            }}
+            style={{ marginRight: '10px', backgroundColor: '#538572', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+          >
+            확인
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{ backgroundColor: '#ccc', color: '#333', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+          >
+            취소
+          </button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        hideProgressBar: true,
+        closeButton: false
       }
-    } catch (err) {
-      if (err.status == 401) {
-        alert("로그인이 필요한 서비스입니다");
-      }
-      console.error(err);
-    }
-  }
+    );
+  };
 
   useEffect(() => {
     getMentos();
@@ -64,122 +92,114 @@ function MentoDetail() {
   return (
     <MentoDetailContainer>
       <MentoDetailMainBox>
-        <div>
-          <MentoDetailProfileImageBox>
-            <img src={mentoProfileUrl} alt="프로필 사진" />
-            <MentoDetailUserInfo>
+        <HeaderBox>
+          <ProfileBox>
+            <img src={mentoProfile} alt="프로필 사진" />
+            <UserInfo>
               <span>아이디</span>
               {mentoName}
-            </MentoDetailUserInfo>
-          </MentoDetailProfileImageBox>
-          <MentoListBtnBox>
-            <button type="button" onClick={() => {
-              const confirmed = window.confirm("채팅을 시작하시겠습니까?");
-              if (confirmed) handleChatGo();
-            }}>대화하기</button>
-          </MentoListBtnBox>
-        </div>
-        <MentoDetailInfoTitleBox>
+            </UserInfo>
+          </ProfileBox>
+          <ButtonBox>
+            <button type="button" onClick={handleChatGo}>대화하기</button>
+          </ButtonBox>
+        </HeaderBox>
+        <SectionTitle>
           <h1>자기소개</h1>
-        </MentoDetailInfoTitleBox>
-        <MentoDetailInfoBox>
+        </SectionTitle>
+        <IntroduceBox>
           {mentoIntroduce}
-        </MentoDetailInfoBox>
+        </IntroduceBox>
       </MentoDetailMainBox>
       {loading && <Loading />}
     </MentoDetailContainer>
-  )
+  );
 }
 
 export default MentoDetail;
 
 const MentoDetailContainer = styled.div`
   display: flex;
-  min-height: 100vh;
   justify-content: center;
-  padding-bottom: 40px;
+  padding: 120px 20px 60px;
+  min-height: 100vh;
 `;
 
 const MentoDetailMainBox = styled.div`
-  width: 90%;
-  margin-top: 140px;
-  border: 1px solid black;
-  > div {
-    display: flex;
-    width: auto;
-  }
+  width: 100%;
+  max-width: 1200px;
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
 `;
 
-const MentoDetailProfileImageBox = styled.div`
+const HeaderBox = styled.div`
   display: flex;
-  width: 600px;
-  height: 50%;
-  padding-left: 30px;
-  padding-top: 30px;
-  align-items: end;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+`;
+
+const ProfileBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 30px;
   img {
-    width: 210px;
-    height: 210px;
-    border-radius: 40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 2px solid #538572;
   }
 `;
 
-const MentoDetailUserInfo = styled.div`
-  display: flex;
-  width: 300px;
-  font-size: 28px;
-  margin-bottom: 60px;
-  margin-left: 60px;
+const UserInfo = styled.div`
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
   span {
-    width: 120px;
-    height: 40px;
-    padding-right: 30px;
-    margin-right: 30px;
-    border-right: 3px solid black;
+    margin-right: 16px;
+    color: #666;
+    border-right: 2px solid #ccc;
+    padding-right: 12px;
   }
 `;
 
-const MentoListBtnBox = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-  padding-top: 30px;
-  padding-right: 30px;
+const ButtonBox = styled.div`
   button {
-    width: 200px;
-    height: 40px;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid black;
-    border-radius: 30px;
-    background-color: white;
-    font-size: 20px;
+    background-color: #538572;
+    color: white;
+    font-size: 16px;
     font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
     cursor: pointer;
-    margin-right: 30px;
+    transition: background 0.2s;
+    &:hover {
+      background-color: #3b6350;
+    }
   }
 `;
 
-
-const MentoDetailInfoTitleBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  align-items: end;
-  padding-left: 40px;
-  h1{
-    font-size: 25px;
+const SectionTitle = styled.div`
+  margin-top: 40px;
+  h1 {
+    font-size: 24px;
     font-weight: bold;
+    color: #3b6350;
   }
 `;
 
-const MentoDetailInfoBox = styled.div`
-  flex: 0 0 94%;
-  max-width: 94%;
-  padding-left: 10px;
-  padding-top: 10px;
-  margin-left: 40px;
-  height: 210px;
-  border: 2px solid black;
+const IntroduceBox = styled.div`
+  min-height: 240px;
   margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #a7c8b7;
+  border-radius: 12px;
+  background-color: #f4fdfa;
+  font-size: 18px;
+  line-height: 1.6;
+  white-space: pre-wrap;
 `;

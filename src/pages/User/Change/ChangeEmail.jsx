@@ -3,6 +3,7 @@ import { useState } from 'react';
 import axios from "@/api/axios";
 import { useNavigate } from 'react-router-dom';
 import Loading from '@/components/loading/loading';
+import { toast } from 'react-toastify';
 
 function FindPasswd() {
   const navigate = useNavigate();
@@ -21,15 +22,15 @@ function FindPasswd() {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         }
       });
-      alert("인증코드 발급 성공");
+      toast.success("인증코드 발급 성공");
       setData(res.data);
     } catch (err) {
       setError(err);
       if (err.response) {
-        alert("인증코드 에러 발생");
+        toast.error("인증코드 에러 발생");
         console.error(err);
       } else {
-        alert("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
+        toast.error("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
         console.error(err);
       }
     } finally {
@@ -50,14 +51,14 @@ function FindPasswd() {
         },
       });
       setData(response.data);
-      alert("이메일 변경에 성공했습니다");
+      toast.success("이메일 변경에 성공했습니다");
       navigate("/profile");
     } catch (err) {
       setError(err);
       if (err.response) {
-        alert("비밀번호 변경중 오류가 발생했습니다. 다시 시도해주세요.");
+        toast.error("비밀번호 변경중 오류가 발생했습니다. 다시 시도해주세요.");
       } else {
-        alert("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
+        toast.error("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
       }
       console.error(err);
       return { success: false, error: err.message };
@@ -91,8 +92,8 @@ function FindPasswd() {
           <ChangeEmailInput type="password" value={password} placeholder='비밀번호를 입력해주세요.' onChange={(e) => setPassword(e.target.value)} />
         </ChangeEmailInputBox>
         <ChangeEmailBtnBox>
-          <ChangeEmailBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
-          <ChangeEmailBtn type="submit" value="변경" onClick={handleChangeEmail} style={{ backgroundColor: "#fff", color: "#000" }} />
+          <ChangeEmailBack type="button" value="뒤로" variant="back" onClick={() => navigate(-1)} />
+          <ChangeEmailBtn type="submit" value="변경" onClick={handleChangeEmail} />
         </ChangeEmailBtnBox>
       </ChangeEmailBox>
       {loading && <Loading />}
@@ -104,68 +105,72 @@ export default FindPasswd;
 
 const ChangeEmailContainer = styled.div`
   display: flex;
-  width: 99vw;
-  min-height: 100vh;
   justify-content: center;
-  align-items: center;
+  width: 100%;
+  min-height: 100vh;
 `;
 
 const ChangeEmailBox = styled.div`
-  width: 90%;
-  height: 80%;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 150px;
 `;
 
 const ChangeEmailTitleBox = styled.div`
   display: flex;
-  width: 100%;
-  height: 60px;
+  justify-content: center;
   margin-bottom: 40px;
 `;
 
 const ChangeEmailTitle = styled.p`
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  font-size: 40px;
+  font-size: 36px;
   font-weight: bold;
-  margin: 20px 0px;
+  color: #538572;
 `;
 
 const ChangeEmailInputBox = styled.div`
   display: flex;
-  height: 70px;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  justify-content: center;
   align-items: center;
-  margin-top: 27px;
-  button{
-    display: flex;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 20px 0;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+
+  &:not(:first-of-type) {
+    margin-top: 24px;
+  }
+
+  button {
     width: 100px;
-    height: 30px;
+    height: 36px;
     background-color: white;
     border-radius: 30px;
-    font-size: 18px;
-    justify-content: center;
-    align-items: center;
+    font-size: 16px;
+    border: 1px solid #538572;
+    color: #538572;
     cursor: pointer;
-    margin-left: 20px;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
   }
 `;
+
 const ChangeEmailInputTitleBox = styled.div`
-  display: flex;
-  width: 15%;
-  justify-content: left;
+  flex: 0 0 140px;
 `;
+
 const ChangeEmailInputTitle = styled.p`
-  font-size: 21px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 600;
 `;
+
 const ChangeEmailInput = styled.input`
-  width: 60%;
-  height: 33px;
-  font-size: 15px;
-  padding-left: 15px;
+  flex: 1;
+  height: 36px;
+  font-size: 16px;
+  padding-left: 14px;
   border-radius: 10px;
   border: 1px solid black;
   outline: none;
@@ -173,22 +178,38 @@ const ChangeEmailInput = styled.input`
 
 const ChangeEmailBtnBox = styled.div`
   display: flex;
-  width: 100%;
-  margin-top: 30px;
   justify-content: center;
-  align-items: center;
+  margin-top: 40px;
+  gap: 20px;
+`;
+
+const ChangeEmailBack = styled.input`
+  width: 130px;
+  height: 50px;
+  font-size: 23px;
+  border-radius: 20px;
+  background-color: #fff;
+  border: 1px solid #538572;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(228, 239, 235);
+  }
 `;
 
 const ChangeEmailBtn = styled.input`
-  display: flex;
   width: 130px;
   height: 50px;
-  border-radius: 20px;
-  justify-content: center;
-  align-items: center;
   font-size: 23px;
-  background-color: black;
+  border-radius: 20px;
+  background-color: #538572;
+  border: 1px solid #538572;
   color: white;
   cursor: pointer;
-  margin: 0px 20px;
+  margin-left: 10px;
+  transition: all 0.2s;
+  &:hover{
+    background-color:rgb(63, 106, 89);
+  }
 `;

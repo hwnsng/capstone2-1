@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import Loading from '@/components/loading/loading';
+import { toast } from 'react-toastify';
 
 function Chat() {
   const chatContentRef = useRef(null);
@@ -19,6 +20,15 @@ function Chat() {
   const socketRef = useRef(null);
 
   const handleChatChange = (e) => setChatInput(e.target.value);
+
+  const scrollToBottom = () => {
+    if (chatContentRef.current) {
+      chatContentRef.current.scrollTo({
+        top: chatContentRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   const handleChatSubmit = (e) => {
     e.preventDefault();
@@ -40,7 +50,7 @@ function Chat() {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        alert("로그인이 필요합니다");
+        toast.error("로그인이 필요합니다");
         return;
       }
 
@@ -114,16 +124,26 @@ function Chat() {
         message: msg.message,
       }));
       setMessages(parsedMessages);
+
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+
       setLoading(false);
     });
 
     socket.on('newChat', (data) => {
       if (String(data.user_id) === String(myUserId)) return;
+
       setMessages((prev) => [...prev, { sender: 'you', message: data.message }]);
+
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
     });
 
     socket.on('error_custom', (data) => {
-      alert(data.message);
+      toast.error(data.message);
     });
 
     socket.on('connect_error', (error) => {
@@ -131,7 +151,7 @@ function Chat() {
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ 연결 종료');
+      console.log('연결 종료');
     });
 
     return () => {
@@ -147,9 +167,11 @@ function Chat() {
             key={chat.chat_id}
             className={chat.chat_id === chatUserId ? 'active' : ''}
             onClick={() => {
-              setChatUserId(chat.chat_id);
-              setChatUserName(chat.chat_partner || '알 수 없는 사용자');
-              setMessages([]);
+              if (chat.chat_id !== chatUserId) {
+                setChatUserId(chat.chat_id);
+                setChatUserName(chat.chat_partner || '알 수 없는 사용자');
+                setMessages([]);
+              }
             }}
           >
             {chat.chat_partner || '알 수 없는 사용자'}
@@ -209,15 +231,15 @@ const ChatContainer = styled.div`
   width: 99vw;
   max-width: 1200px;
   height: 100vh;
-  padding-top: 120px;
+  padding-top: 89px;
   justify-content: center;
   margin: 0 auto;
 `;
 
 const ChatSelectBox = styled.div`
-  width: 20%;
-  height: 90%;
-  background-color: #f8f7f7;
+  width: 30%;
+  height: 100%;
+  background-color: #fff;
   border-right: 2px solid black;
   border-left: 2px solid black;
   div {
@@ -230,7 +252,7 @@ const ChatSelectBox = styled.div`
     justify-content: center;
     align-items: center;
     &.active {
-      background-color: #e8e8e8;
+      background-color:rgb(238, 250, 246);
       color: #538572;
     }
   }
@@ -280,7 +302,7 @@ const ChatYouBox = styled.div`
 
 const ChatMainBox = styled.div`
   width: 95%;
-  height: 90%;
+  height: 100%;
   position: relative;
 `;
 
@@ -301,7 +323,7 @@ const ChatDivider = styled.div`
 const ChatInputBox = styled.div`
   display: flex;
   width: 100%;
-  height: 60px;
+  height: 80px;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -330,9 +352,9 @@ const ChatInputBox = styled.div`
       display: flex;
       font-size: 20px;
       height: 35px;
-      width: 35px;
+      width: 40px;
       font-weight: bold;
-      background-color: black;
+      background-color: #538572;
       color: white;
       justify-content: center;
       align-items: center;

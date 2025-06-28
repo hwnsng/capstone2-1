@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 function MentoMenu({ userProfile, MentoName, onClick }) {
   const navigate = useNavigate();
-  const userProfileUrl = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/static/profile/${userProfile}`;
   return (
     <MentoMenuContainer onClick={onClick ?? (() => navigate('/mentodetail'))}>
       <MentoMenuImgBox>
-        <img src={userProfileUrl} alt="프로필 사진" />
+        <img src={userProfile} alt="프로필 사진" />
       </MentoMenuImgBox>
       <MentoMenuUserNameBox>
         <h1>{MentoName}</h1>
@@ -19,34 +18,46 @@ function MentoMenu({ userProfile, MentoName, onClick }) {
 export default MentoMenu;
 
 const MentoMenuContainer = styled.div`
-  width: 250px;
-  height: 320px;
-  justify-content: center;
-  border: 1px solid black;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
   cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
 `;
 
 const MentoMenuImgBox = styled.div`
-  display: flex;
   width: 100%;
-  height: 80%;
-  justify-content: center;
-  align-items: center;
-  img{
-    width: 90%;
-    height: 95%;
-    border-radius: 150px;
+  padding-top: 100%;
+  position: relative;
+
+  img {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #538572;
+    background-color: white;
   }
 `;
 
 const MentoMenuUserNameBox = styled.div`
   display: flex;
-  width: 100%;
-  height: 20%;
   justify-content: center;
   align-items: center;
-  h1{
-    font-size: 23px;
+  padding: 16px;
+
+  h1 {
+    font-size: 18px;
     font-weight: bold;
+    color: #538572;
   }
 `;

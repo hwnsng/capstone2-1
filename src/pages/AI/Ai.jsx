@@ -1,76 +1,187 @@
 import styled from 'styled-components';
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Loading from '@/components/loading/loading';
 
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div>
+          <h2>오류가 발생했습니다.</h2>
+          <p>{this.state.error?.message || '알 수 없는 오류'}</p>
+          <button onClick={() => window.location.reload()}>새로고침</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Ai() {
-  const [userChat, setUserChat] = useState("");
+  const [userChat, setUserChat] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
+  const [aiTypingText, setAiTypingText] = useState('');
+  const [showTyping, setShowTyping] = useState(false);
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
+  const sessionIdRef = useRef(null);
 
   const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chatHistory, loading]);
+    const storedSessionId = localStorage.getItem('sessionId');
+    if (storedSessionId) {
+      sessionIdRef.current = storedSessionId;
+      fetchHistory();
+    }
+  }, []);
 
-  const SetUserChat = (e) => {
-    setUserChat(e.target.value);
-  };
-
-  const handleInputUser = async (e) => {
-    e.preventDefault();
-    if (!userChat.trim()) return;
-
-    const userMessage = { type: 'user', text: userChat };
-    setChatHistory(prev => [...prev, userMessage]);
-    const currentUserChat = userChat;
-    setUserChat("");
+  const fetchHistory = async () => {
     setLoading(true);
-
     try {
-      const res = await axios.post(`http://127.0.0.1:8000/query`, {
-        query: currentUserChat,
-      });
-      const aiMessage = { type: 'ai', text: res.data.answer };
-      setChatHistory(prev => [...prev, aiMessage]);
+      const sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        console.warn('sessionId가 localStorage에 없습니다.');
+        return;
+      }
+
+      sessionIdRef.current = sessionId;
+
+      const res = await axios.get(`http://127.0.0.1:8000/history?session_id=${sessionId}`);
+
+      if (res.data && Array.isArray(res.data.history)) {
+        setChatHistory(
+          res.data.history.map((item) => ({
+            type: item.role === 'user' ? 'user' : 'ai',
+            text: item.text,
+          }))
+        );
+
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('fetchHistory 오류:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory, aiTypingText]);
+
+  const handleInputUser = async (e) => {
+    e.preventDefault();
+    if (!userChat.trim()) return;
+
+    const currentUserChat = userChat;
+    setUserChat('');
+    setChatHistory((prev) => [...prev, { type: 'user', text: currentUserChat }]);
+    setAiTypingText('');
+    setShowTyping(true);
+
+    try {
+      const postData = { query: currentUserChat };
+      if (sessionIdRef.current) postData.sessionId = sessionIdRef.current;
+
+      const res = await axios.post('http://127.0.0.1:8000/query', postData);
+      console.log('API 응답:', res.data);
+      const fullText = res.data.source_summary || '답변이 없습니다.';
+
+      if (!sessionIdRef.current && res.data.session_id) {
+        sessionIdRef.current = res.data.session_id;
+        localStorage.setItem('sessionId', res.data.session_id);
+      }
+
+      typeTextEffect(fullText);
+    } catch (err) {
+      console.error('handleInputUser 오류:', err);
+      typeTextEffect('현재 AI 서버가 정상 동작하지 않습니다.\n잠시 후 다시 시도 해 주세요.');
+    }
+  };
+
+  const typeTextEffect = (text) => {
+    let index = 0;
+    setAiTypingText('');
+    setShowTyping(true);
+    const typingInterval = setInterval(() => {
+      setAiTypingText((prev) => {
+        const nextChar = text.charAt(index);
+        index++;
+        if (index >= text.length) {
+          clearInterval(typingInterval);
+          setChatHistory((prev) => [...prev, { type: 'ai', text }]);
+          setAiTypingText('');
+          setShowTyping(false);
+        }
+        return prev + nextChar;
+      });
+    }, 20);
+  };
+
+  const handleInputChange = (e) => setUserChat(e.target.value);
+
   return (
-    <AiContainer>
-      <AiMainBox>
-        <AiChatBox>
-          {chatHistory.map((msg, index) => (
-            msg.type === 'user' ? (
-              <AiChatMe key={index}><p>{msg.text}</p></AiChatMe>
-            ) : (
-              <AiChat key={index}><p>{msg.text}</p></AiChat>
-            )
-          ))}
-          <div ref={chatEndRef} />
-        </AiChatBox>
-      </AiMainBox>
-      <AiChatInputBox>
-        <form onSubmit={handleInputUser}>
-          <input
-            type="text"
-            placeholder="의성에 대해 무엇이든 물어보세요!"
-            value={userChat}
-            onChange={SetUserChat}
-          />
-          <button type="submit">↑</button>
-        </form>
-      </AiChatInputBox>
-      {loading && <Loading />}
-    </AiContainer>
+    <ErrorBoundary>
+      <AiContainer>
+        <AiMainBox>
+          <AiChatBox>
+            {chatHistory.map((msg, i) =>
+              msg.type === 'user' ? (
+                <AiChatMe key={i}>
+                  <div className="bubble">{msg.text}</div>
+                </AiChatMe>
+              ) : (
+                <AiChat key={i}>
+                  <span className="plain">{msg.text}</span>
+                </AiChat>
+              )
+            )}
+            {showTyping && !aiTypingText && (
+              <AiChat>
+                <LoadingDots>
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </LoadingDots>
+              </AiChat>
+            )}
+            {aiTypingText && (
+              <AiChat>
+                <span className="plain">{aiTypingText}</span>
+              </AiChat>
+            )}
+            <div ref={chatEndRef} />
+          </AiChatBox>
+        </AiMainBox>
+        <AiChatInputBox>
+          <form onSubmit={handleInputUser}>
+            <input
+              type="text"
+              placeholder="의성에 대해 무엇이든 물어보세요!"
+              value={userChat}
+              onChange={handleInputChange}
+            />
+            <button type="submit">↑</button>
+          </form>
+        </AiChatInputBox>
+        {loading && <Loading />}
+      </AiContainer>
+    </ErrorBoundary>
   );
 }
 
@@ -91,27 +202,28 @@ const AiMainBox = styled.div`
   margin-top: 130px;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
 `;
 
 const AiChatBox = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  height: 100%;
+  width: 100%;
+  padding: 20px;
 `;
 
 const AiChatMe = styled.div`
   display: flex;
   justify-content: flex-end;
-  p {
-    display: flex;
+  padding: 12px;
+  margin: 10px 0;
+
+  .bubble {
     max-width: 65%;
     background-color: #538572;
-    font-size: 18px;
-    color: #fff;
-    padding: 17px;
-    border-radius: 50px;
+    color: white;
+    font-size: 16px;
+    padding: 15px 18px;
+    border-radius: 20px 20px 0 20px;
+    white-space: pre-wrap;
+    line-height: 1.5;
   }
 `;
 
@@ -120,11 +232,12 @@ const AiChat = styled.div`
   justify-content: flex-start;
   padding: 12px;
   margin: 10px 0;
-  p {
-    max-width: 65%;
-    font-size: 18px;
-    padding: 17px;
-    border-radius: 50px;
+
+  .plain {
+    font-size: 16px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    color: black;
   }
 `;
 
@@ -141,7 +254,7 @@ const AiChatInputBox = styled.div`
     display: flex;
     width: 900px;
     align-items: center;
-    border: 1px solid black;
+    border: 1px solid #538572;
     border-radius: 50px;
     background: white;
     padding: 5px 10px;
@@ -159,13 +272,41 @@ const AiChatInputBox = styled.div`
       width: 40px;
       height: 40px;
       font-size: 20px;
-      background-color: black;
+      background-color: #538572;
+      border: 1px solid #538572;
       color: white;
       border-radius: 50px;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
+    }
+  }
+`;
+
+const LoadingDots = styled.div`
+  display: flex;
+  gap: 5px;
+  font-size: 30px;
+  padding-left: 10px;
+  span {
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes bounce {
+    0%,
+    80%,
+    100% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.5);
     }
   }
 `;

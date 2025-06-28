@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 function HouseRecomend({ HouseTitle, Region, Price, HouseId, HouseImg }) {
   const navigate = useNavigate();
-  const houseImage = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${HouseImg}`;
   return (
     <HouseMenuContainer onClick={() => navigate(`/housedetail/${HouseId}`)}>
       <HouseMenuImgBox>
-        <img src={houseImage} alt="집 이미지" />
+        <img src={HouseImg} alt="집 이미지" />
       </HouseMenuImgBox>
       <HouseMenuInfoBox >
         <HouseMenuInfoTitle>

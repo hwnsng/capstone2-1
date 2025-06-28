@@ -17,10 +17,8 @@ function Profile() {
     profileImage,
     handleImageUpload,
     handlePasswordChange,
-    handleEmailChange
+    handleEmailChange,
   } = useProfile();
-
-  const profileUrl = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${profileImage}`;
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
@@ -67,31 +65,39 @@ function Profile() {
   return (
     <ProfileContainer>
       <MainProfBox>
-        <ProfileImageBox>
-          <img src={profileUrl} alt="프로필 이미지" />
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-        </ProfileImageBox>
-        <UserInfoContainer>
+        <TopSection>
+          <ProfileImageBox>
+            <img src={profileImage} alt="프로필 이미지" />
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </ProfileImageBox>
           <UserInfoBox>
-            <UserInfo><span>아이디</span>{name}</UserInfo>
-            <UserInfo><span>이메일</span>{email}</UserInfo>
-            <UserInfo style={{ margin: "0" }}><span>비밀번호</span>********</UserInfo>
+            <div><span>아이디</span><p>{name}</p></div>
+            <div><span>이메일</span><p>{email}</p></div>
+            <div><span>비밀번호</span><p>********</p></div>
           </UserInfoBox>
-        </UserInfoContainer>
+        </TopSection>
+
+        <Divider />
+
         <UserInfoChangeBox>
           <UserInfoChangeBtn onClick={handleEmailChange}>이메일 변경</UserInfoChangeBtn>
           <UserInfoChangeBtn onClick={handlePasswordChange}>비밀번호 변경</UserInfoChangeBtn>
           <UserInfoChangeBtn onClick={handleFileClick}>프로필 변경</UserInfoChangeBtn>
-          {mentoEditBtnOn && <UserInfoChangeBtn onClick={handleGotoMentoChange}>멘토 정보 수정/삭제</UserInfoChangeBtn>}
+          {mentoEditBtnOn && (
+            <UserInfoChangeBtn onClick={handleGotoMentoChange}>
+              멘토 정보 수정/삭제
+            </UserInfoChangeBtn>
+          )}
         </UserInfoChangeBox>
+
+        {loading && <Loading />}
       </MainProfBox>
-      {loading && <Loading />}
     </ProfileContainer>
   );
 }
@@ -100,75 +106,91 @@ export default Profile;
 
 const ProfileContainer = styled.div`
   display: flex;
-  width: 99vw;
-  min-height: 100vh;
   justify-content: center;
-  align-items: center;
+  padding: 100px 20px;
+  min-height: 100vh;
 `;
 
 const MainProfBox = styled.div`
   display: flex;
-  width: 85%;
-  height: 60%;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1000px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
+  padding: 40px;
+  margin-top: 100px;
+`;
+
+const TopSection = styled.div`
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+  align-items: center;
 `;
 
 const ProfileImageBox = styled.div`
-  width: 27%;
-  height: 100%;
-  img {
-    width: 300px;
-    height: 300px;
-    border-radius: 40px;
-  }
-`;
+  flex-shrink: 0;
 
-const UserInfoContainer = styled.div`
-  display: flex;
-  width: 50%;
-  height: 250px;
-  align-items: end;
+  img {
+    width: 180px;
+    height: 180px;
+    border-radius: 100px;
+    object-fit: cover;
+    border: 3px solid #538572;
+  }
 `;
 
 const UserInfoBox = styled.div`
-  width: 100%;
-  height: 70%;
+  flex-grow: 1;
+
+  div {
+    font-size: 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+
+    span {
+      width: 120px;
+      font-weight: bold;
+      color: #444;
+      margin-right: 20px;
+      text-align: right;
+    }
+
+    p {
+      font-size: 20px;
+      color: #222;
+      margin: 0;
+    }
+  }
 `;
 
-const UserInfo = styled.div`
-  display: flex;
-  width: 100%;
-  font-size: 28px;
-  margin-bottom: 30px;
-  span {
-    width: 150px;
-    border-right: 2px solid black;
-    padding-right: 30px;
-    margin-right: 30px;
-    text-align: end;
-  }
-  input {
-    background-color: white;
-    width: 300px;
-    height: 30px;
-    font-size: 17px;
-  }
+const Divider = styled.div`
+  border-top: 1px solid #ddd;
+  margin: 30px 0;
 `;
 
 const UserInfoChangeBox = styled.div`
-  width: 25%;
-  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
 `;
 
 const UserInfoChangeBtn = styled.button`
-  display: flex;
-  min-width: 200px;
-  min-height: 40px;
-  font-size: 20px;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid black;
-  border-radius: 30px;
-  background-color: white;
+  padding: 14px 24px;
+  font-size: 18px;
+  font-weight: 500;
+  background-color: #538572;
+  color: white;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  margin-bottom: 30px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #3e6c5e;
+  }
 `;

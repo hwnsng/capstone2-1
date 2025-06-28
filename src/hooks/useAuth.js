@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from 'react-toastify';
 
 const useAuth = () => {
   const [error, setError] = useState(null);
@@ -76,7 +77,7 @@ const useAuth = () => {
         onLoginSuccess(response);
       }
     } catch (err) {
-      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+      toast.error("세션이 만료되었습니다. 다시 로그인해주세요.");
       removeAccessTokenCookie();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
@@ -98,12 +99,12 @@ const useAuth = () => {
       setError(err);
       if (err.response) {
         if (err.response.status === 409) {
-          alert("이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
+          toast.warning("이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
         } else {
-          alert("인증코드 에러 발생");
+          toast.error("인증코드 에러 발생");
         }
       } else {
-        alert("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
+        toast.error("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
       }
       console.error(err);
       return { success: false, error: err.message };
@@ -123,13 +124,13 @@ const useAuth = () => {
     } catch (err) {
       setError(err);
       if (err.response?.status === 409) {
-        alert("이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
+        toast.warning("이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
       } else if (err.response?.status === 500) {
-        alert("이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.");
+        toast.warning("이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.");
       } else {
-        alert("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+        toast.error("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
       }
-      return { success: false, error: err.message };
+      return { success: false, error: err };
     }
   };
 
@@ -146,9 +147,9 @@ const useAuth = () => {
     } catch (err) {
       setError(err);
       if (err.response?.status === 401) {
-        alert("이름이나 비밀번호가 잘못되었습니다.");
+        toast.warning("이름이나 비밀번호가 잘못되었습니다.");
       } else {
-        alert("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+        toast.error("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
       }
       return { success: false };
     }

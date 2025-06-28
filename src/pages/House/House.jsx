@@ -1,13 +1,11 @@
 import styled from 'styled-components';
 import { useState, useEffect } from 'react'
-import search from '@/media/search.png';
 import HouseMenu from '@/components/House/HouseMenu.jsx';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function House() {
   const navigate = useNavigate();
-  const [searchTitle, setSearchTitle] = useState("");
   const page = 1;
   const [houses, setHouses] = useState([]);
 
@@ -20,31 +18,15 @@ function House() {
       const res = await axios.get(
         `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses?page=${page}`
       );
-      console.log(res.data);
       setHouses(res.data.houses);
     } catch (error) {
       console.error(error);
     }
   };
-
-  const handleSearchClick = () => {
-
-  }
-
-  const SearchTitle = (e) => {
-    setSearchTitle(e.target.value);
-  }
-
   return (
     <HouseContainer>
       <HouseMainBox>
         <HouseMainTitleBox><h1>주거 공고</h1></HouseMainTitleBox>
-        <SearchBox>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <SearchIcon src={search} alt="검색 아이콘" onClick={handleSearchClick} />
-            <SearchBar placeholder='주거 공고 검색하기' value={searchTitle} onChange={SearchTitle} />
-          </form>
-        </SearchBox>
         <HouseCreateBtnBox>
           <button onClick={() => navigate("/housecreate")}>주거 공고 작성하기</button>
         </HouseCreateBtnBox>
@@ -90,41 +72,8 @@ const HouseMainTitleBox = styled.div`
   h1{
     font-size: 40px;
     font-weight: bold;
+    color: #538572;
   }
-`;
-
-const SearchBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  form {
-    display: flex;
-    width: 60%;
-    height: 45px;
-    background-color: rgb(235, 235, 235);
-    justify-content: center;
-    align-items: center;
-    border-radius: 50px;
-  };
-`;
-
-const SearchIcon = styled.img`
-  display: flex;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-`;
-
-const SearchBar = styled.input`
-  font-size: 18px;
-  border: none;
-  outline: none;
-  width: 90%;
-  background: none;
-  padding-left: 20px;
 `;
 
 const HouseMenuMainBox = styled.div`
@@ -151,9 +100,10 @@ const HouseCreateBtnBox = styled.div`
     padding: 10px;
     font-size: 20px;
     font-weight: bold;
-    border: 1px solid black;
+    border: none;
     border-radius: 30px;
-    background-color: white;
+    background-color: #538572;
+    color: white;
     cursor: pointer;
   }
 `;

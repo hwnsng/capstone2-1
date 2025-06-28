@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 function HouseMenu({ houseImage, houseTitle, price, houseId }) {
   const navigate = useNavigate();
-  const houseMainImage = `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app${houseImage}`;
   return (
     <HouseMenuContainer onClick={() => navigate(`/housedetail/${houseId}`)}>
       <HouseMenuImgBox>
-        <img src={houseMainImage} alt="집 이미지" />
+        <img src={houseImage} alt="집 이미지" />
       </HouseMenuImgBox>
       <HouseMenuInfoBox >
         <HouseMenuInfoTitle>
@@ -27,7 +26,7 @@ const HouseMenuContainer = styled.div`
   width: 100%;
   height: 270px;
   border-radius: 30px;
-  border: 1px solid black;
+  border: 1px solid rgb(207, 207, 207);
   cursor: pointer;
   box-sizing: border-box;
 `;
@@ -63,23 +62,6 @@ const HouseMenuInfoTitle = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-`;
-
-const HouseMenuRegion = styled.div`
-  display: flex;
-  width: 100%;
-  margin-top: 11px;
-  h1 {
-    font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    span {
-      &.green { color: #279b69; }
-      &.red { color: #ed6a6d; }
-      &.blue { color: #468ad8; }
-    }
   }
 `;
 

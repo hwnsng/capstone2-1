@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import search from '@/media/search.png';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -10,7 +9,6 @@ function Community() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const queryString = searchParams.get('category');
-
   const [searchTitle, setSearchTitle] = useState("");
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -66,6 +64,14 @@ function Community() {
     QNA: '귀촌 / 농사 Q&A',
     FREE: '자유 토크'
   };
+
+  const categoryColorMap = {
+    0: '#999999',
+    1: '#538572',
+    2: '#FF6B6B',
+    3: '#4D96FF',
+    4: '#FFC300',
+  };
   const fetchPosts = async () => {
     setLoading(true);
     try {
@@ -89,10 +95,6 @@ function Community() {
     fetchPosts();
   }, [category, page, searchTitle]);
 
-  const handleSearchClick = () => {
-    fetchPosts();
-  };
-
   const handleCategoryChange = (newCategory) => {
     setCategory(newCategory);
     setPage(1);
@@ -105,37 +107,37 @@ function Community() {
         <CommTitleBox>커뮤니티</CommTitleBox>
 
         <CategoryBox>
-          <CategoryItem className={queryString == "1" ? "active" : ""} onClick={() => handleCategoryChange(1)}>귀촌 블로그</CategoryItem>
-          <CategoryItem className={queryString == "2" ? "active" : ""} onClick={() => handleCategoryChange(2)}>귀촌 정보 공유</CategoryItem>
-          <CategoryItem className={queryString == "0" ? "active" : ""} onClick={() => handleCategoryChange(0)}>전체</CategoryItem>
-          <CategoryItem className={queryString == "3" ? "active" : ""} onClick={() => handleCategoryChange(3)}>귀촌 / 농사 Q&A</CategoryItem>
-          <CategoryItem className={queryString == "4" ? "active" : ""} style={{ border: "none" }} onClick={() => handleCategoryChange(4)}>자유 토크</CategoryItem>
+          {[0, 1, 2, 3, 4].map((cat) => (
+            <CategoryItem
+              key={cat}
+              className={queryString === String(cat) ? "active" : ""}
+              onClick={() => handleCategoryChange(cat)}
+            >
+              <ColorBox style={{ backgroundColor: categoryColorMap[cat] }} />
+              {categoryNameMap[categoryMap[cat]] || "전체"}
+            </CategoryItem>
+          ))}
         </CategoryBox>
 
-        <SearchBox>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <SearchIcon src={search} alt="검색 아이콘" onClick={handleSearchClick} />
-            <SearchBar placeholder='제목을 검색해주세요.' value={searchTitle} onChange={SearchTitle} />
-          </form>
-        </SearchBox>
-
         <PostListTitle>
-          <ListTitleItem style={{ width: "165px" }}>번호</ListTitleItem>
-          <ListTitleItem style={{ width: "412px", textAlign: "center" }}>카테고리</ListTitleItem>
-          <ListTitleItem style={{ width: "338px", textAlign: "center" }}>제목</ListTitleItem>
-          <ListTitleItem style={{ width: "165px" }}>작성자</ListTitleItem>
-          <ListTitleItem style={{ width: "100px" }}>작성일</ListTitleItem>
+          <ListTitleItem style={{ width: "80px" }}>번호</ListTitleItem>
+          <ListTitleItem style={{ width: "100px" }}>분류</ListTitleItem>
+          <ListTitleItem style={{ width: "400px", textAlign: "center" }}>제목</ListTitleItem>
+          <ListTitleItem className="right" style={{ width: "95px" }}>글쓴이</ListTitleItem>
+          <ListTitleItem className="right" style={{ width: "113px" }}>날짜</ListTitleItem>
+          <ListTitleItem className="right" style={{ width: "89px" }}>💚</ListTitleItem>
         </PostListTitle>
 
         <PostList>
           {Array.isArray(posts) && posts.length > 0 ? (
-            posts.map((post, idx) => (
-              <PostItem onClick={() => navigate(`/community/${post.id}`)} key={idx}>
-                <p style={{ paddingLeft: "20px" }}>{post.id}</p>
-                <p style={{ width: "130px", textAlign: "center" }}>{categoryNameMap[post.category] || '전체'}</p>
-                <p style={{ width: "450px", textAlign: "center" }}>{post.title}</p>
-                <p>{post.username}</p>
-                <p style={{ paddingRight: "20px" }}>{new Date(post.createdAt).toLocaleDateString()}</p>
+            posts.map((post) => (
+              <PostItem onClick={() => navigate(`/community/${post.id}`)} key={post.id}>
+                <p>{post.id}</p>
+                <p className="category">{categoryNameMap[post.category] || '전체'}</p>
+                <p className="title">{post.title}</p>
+                <p className="username">{post.username}</p>
+                <p>{new Date(post.createdAt).toLocaleDateString()}</p>
+                <p>{post.like}</p>
               </PostItem>
             ))
           ) : (
@@ -213,7 +215,7 @@ const MainCommBox = styled.div`
   display: block;
   width: 100%;
   max-width: 1200px;
-  margin-top: 130px;
+  margin-top: 120px;
 `;
 
 const CommTitleBox = styled.div`
@@ -231,90 +233,91 @@ const CategoryBox = styled.div`
   width: 100%;
   justify-content: center;
   align-items: center;
-  margin-bottom: 30px;
-`;
-
-const CategoryItem = styled.div`
-  display: flex;
-  font-size: 23px;
-  font-weight: bold;
-  border-right: 2px solid black;
-  justify-content: center;
-  align-items: center;
-  padding: 0 20px;
-  cursor: pointer;
-  &:last-child {
-    border-right: none;
-  }
-  &.active {
-    color: #538572;
-  }
-`;
-
-const SearchBox = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  form {
-    display: flex;
-    width: 60%;
-    height: 45px;
-    background-color: rgb(235, 235, 235);
-    justify-content: center;
-    align-items: center;
-    border-radius: 50px;
-  };
-`;
-
-const SearchIcon = styled.img`
-  display: flex;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-`;
-
-const SearchBar = styled.input`
-  font-size: 18px;
-  border: none;
-  outline: none;
-  width: 90%;
-  background: none;
-  padding-left: 20px;
+  margin: 30px 0;
 `;
 
 const PostListTitle = styled.div`
-  display: flex;
-  width: 100%;
+  display: grid;
+  grid-template-columns: 100px 200px 1fr 165px 120px 80px;
   height: 50px;
-  background-color: #EEEEEE;
-  aligm-items: center;
+  background-color: rgb(222, 235, 230);
+  align-items: center;
+  border-radius: 30px 30px 0px 0px;
   margin-top: 30px;
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
+  padding: 0 20px;
+  font-weight: bold;
+  color: #538572;
+  text-align: center;
 `;
 
 const ListTitleItem = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px;
-  padding-left: 24px;
+  justify-content: center;
+  padding: 0 16px;
   color: #538572;
   font-weight: bold;
+
+  &.left {
+    justify-content: flex-start;
+    padding-left: 24px;
+  }
+
+  &.right {
+    justify-content: flex-end;
+    padding-right: 28px;
+  }
 `;
 
 const PostList = styled.div`
 `;
 
 const PostItem = styled.div`
-  display: flex;
-  padding: 10px;
-  padding-top: 20px;
-  border-bottom: 2px solid black;
-  height: 60px;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 100px 200px 1fr 165px 120px 80px;
+  align-items: center;
+  padding: 20px 10px;
+  border-bottom: 1px solid rgb(218, 218, 218);
   cursor: pointer;
+
+  &:hover {
+    background-color: #f6f6f6;
+  }
+
+  p {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .category {
+    padding-left: 20px;
+    text-align: left;
+  }
+
+  .title {
+    text-align: left;
+    padding-left: 10px;
+  }
+
+  .username {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    text-align: left;
+    padding-left: 10px;
+  }
+
+  .username img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 `;
 
 const CreateBtnBox = styled.div`
@@ -342,7 +345,7 @@ const PageNumberBtn = styled.button`
   padding: 6px 12px;
   border-radius: 10px;
   &.active {
-    background-color: #74C69D;
+    background-color: #538572;
     color: white;
     font-weight: bold;
   }
@@ -382,5 +385,36 @@ const ComCreBtn = styled.input`
   transition: all 0.2s;
   &:hover{
     background-color:rgb(63, 106, 89);
+  }
+`;
+
+const ColorBox = styled.div`
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-right: 8px;
+  flex-shrink: 0;
+`;
+
+const CategoryItem = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 6px 12px;
+  margin: 0 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #555555;
+  background-color: #f0f0f0;
+  transition: all 0.2s;
+
+  &.active {
+    background-color: #538572;
+    color: white;
+  }
+
+  &:hover {
+    background-color: #d1e5d0;
   }
 `;

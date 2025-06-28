@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Loading from '@/components/loading/loading';
 import { useNavigate } from 'react-router-dom';
 import EditableComment from './EditableComment';
+import { toast } from 'react-toastify';
 
 function CommunityDetail() {
   const navigate = useNavigate();
@@ -21,8 +22,14 @@ function CommunityDetail() {
   const [my, setMy] = useState(false);
   const [name, setName] = useState(null);
   const userId = localStorage.getItem("userId");
+  const [replyVisibleId, setReplyVisibleId] = useState(null);
+
+  const toggleReplyVisibility = (commentId) => {
+    setReplyVisibleId(prev => (prev === commentId ? null : commentId));
+  };
 
   const getName = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/auth/profile/${userId}`,
@@ -35,6 +42,8 @@ function CommunityDetail() {
       setName(response.data.userInfo.name);
     } catch (error) {
       console.error('사용자 이름 불러오기 실패', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,12 +53,12 @@ function CommunityDetail() {
 
   const handleCCommentAdd = async (parentId) => {
     if (newCComment.trim() === "") {
-      alert("댓글을 입력해주세요.");
+      toast.warning("댓글을 입력해주세요.");
       return;
     }
 
     if (newCComment.length > 500) {
-      alert("댓글은 최대 500자까지 입력할 수 있습니다.");
+      toast.warning("댓글은 최대 500자까지 입력할 수 있습니다.");
       return;
     }
 
@@ -74,10 +83,10 @@ function CommunityDetail() {
       setComments((prevComments) => [newCommentData, ...prevComments]);
       setNewCComment("");
       setReplyTargetId(null);
-      setLoading(false);
     } catch (err) {
       console.error("대댓글 작성 실패:", err);
-      alert("대댓글 작성에 실패했습니다.");
+      toast.error("대댓글 작성에 실패했습니다.");
+    } finally {
       setLoading(false);
     }
   };
@@ -92,25 +101,26 @@ function CommunityDetail() {
       if (res.data.number < res.data.totalPages - 1) {
         fetchComments(page + 1);
       }
-      setLoading(false);
     } catch (err) {
       console.error("댓글 불러오기 실패:", err);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleAddComment = async () => {
     if (newComment.trim() === "") {
-      alert("댓글을 입력해주세요.");
+      toast.warning("댓글을 입력해주세요.");
       return;
     }
 
     if (newComment.length > 500) {
-      alert("댓글은 최대 500자까지 입력할 수 있습니다.");
+      toast.warning("댓글은 최대 500자까지 입력할 수 있습니다.");
       return;
     }
     setLoading(true);
     try {
+      setLoading(true);
       const formData = new FormData();
       formData.append("content", newComment);
       formData.append("parentId", "");
@@ -129,10 +139,10 @@ function CommunityDetail() {
       const newCommentData = res.data;
       setComments(prevComments => [newCommentData, ...prevComments]);
       setNewComment("");
-      setLoading(false);
     } catch (err) {
       console.error("댓글 작성 실패:", err);
-      alert("댓글 작성에 실패했습니다.");
+      toast.error("댓글 작성에 실패했습니다.");
+    } finally {
       setLoading(false);
     }
   };
@@ -143,9 +153,9 @@ function CommunityDetail() {
       const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/posts/${PostId}`);
       setPost(res.data);
       setLikeCount(res.data.like);
-      setLoading(false);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
+    } finally {
       setLoading(false);
     }
   };
@@ -164,9 +174,9 @@ function CommunityDetail() {
       );
       setLikeCheck(true);
       setLikeCount((prev) => prev + 1);
-      setLoading(false);
     } catch (error) {
       console.error("좋아요 처리 실패:", error.response?.data || error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -183,9 +193,9 @@ function CommunityDetail() {
       const likedPosts = likeCheckRes.data.content;
       const liked = likedPosts.some(post => post.id == PostId);
       setLikeCheck(liked);
-      setLoading(false);
     } catch (error) {
       console.error("좋아요 확인 실패:", error.response?.data || error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -196,6 +206,7 @@ function CommunityDetail() {
 
   const handlePostUpdate = async () => {
     try {
+      setLoading(true);
       const formData = new FormData();
       formData.append("category", post.category);
       formData.append("title", post.title);
@@ -212,31 +223,36 @@ function CommunityDetail() {
         }
       );
 
-      alert("게시글이 수정되었습니다.");
       setEditMode(false);
-      window.location.reload();
+      toast.success("게시글이 수정되었습니다.");
     } catch (err) {
       console.error("게시글 수정 실패:", err);
-      alert("게시글 수정에 실패했습니다.");
+      toast.error("게시글 수정에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePostDelete = async () => {
+    setLoading(true);
     try {
       await axios.delete(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/posts/${PostId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         },
       })
-      alert("게시글이 삭제되었습니다.");
       navigate("/community?category=0");
+      toast.success("게시글이 삭제되었습니다.");
     } catch (err) {
       console.error(err);
-      alert("게시글 삭제에 실패했습니다.");
+      toast.error("게시글 삭제에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   }
 
   const handleCommentEdit = async (commentId, content) => {
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("content", content);
@@ -255,14 +271,17 @@ function CommunityDetail() {
       setComments(prev =>
         prev.map(c => (c.id === commentId ? { ...c, content } : c))
       );
-      alert("댓글이 수정되었습니다.");
+      toast.success("댓글이 수정되었습니다.");
     } catch (err) {
       console.error("댓글 수정 실패:", err);
-      alert("댓글 수정에 실패했습니다.");
+      toast.error("댓글 수정에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCommentDelete = async (commentId) => {
+    setLoading(true);
     try {
       await axios.delete(
         `https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/comments/${commentId}`,
@@ -273,10 +292,12 @@ function CommunityDetail() {
         }
       );
       setComments(prev => prev.filter(c => c.id !== commentId));
-      alert("댓글이 삭제되었습니다.");
+      toast.success("댓글이 삭제되었습니다.");
     } catch (err) {
       console.error("댓글 삭제 실패:", err);
-      alert("댓글 삭제에 실패했습니다.");
+      toast.error("댓글 삭제에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -293,6 +314,53 @@ function CommunityDetail() {
     }
   }, [post, name]);
 
+  const confirmPostDelete = () => {
+    toast.info(
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <span style={{ marginBottom: '10px' }}>정말로 게시글을 삭제하시겠습니까?</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => {
+              toast.dismiss();
+              handlePostDelete();
+            }}
+            style={{
+              backgroundColor: '#538572',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            확인
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{
+              backgroundColor: '#ccc',
+              color: '#333',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            취소
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        hideProgressBar: true,
+        closeButton: false,
+      }
+    );
+  };
+
   if (!post) return <p>로딩 중...</p>;
   return (
     <CommDetailContainer>
@@ -304,10 +372,7 @@ function CommunityDetail() {
               <ComDetDelBtn
                 type="button"
                 value="삭제"
-                onClick={() => {
-                  const confirmed = window.confirm("정말로 삭제하시겠습니까?");
-                  if (confirmed) handlePostDelete();
-                }}
+                onClick={confirmPostDelete}
               />
             </CommDetailBtnBox>
           )}
@@ -345,16 +410,22 @@ function CommunityDetail() {
                 maxLength={500}
                 rows={1}
               />
-              <CommentButton onClick={handleAddComment}>등록</CommentButton>
             </CommentInputWrapper>
+            <CommentBtnBox>
+              <CommentButton onClick={handleAddComment}>댓글 작성</CommentButton>
+            </CommentBtnBox>
+
 
             {comments
-              .filter((comment) => comment.parentId === null)
-              .map((comment) => (
+              .filter(comment => comment.parentId === null)
+              .map(comment => (
                 <div key={comment.id}>
                   <CommentBox>
-                    <CommentUserInfo>{comment.username} | </CommentUserInfo>
                     <CommentDetail>
+                      <CommentUserInfo>{comment.username}</CommentUserInfo>
+                    </CommentDetail>
+
+                    <CommentContent>
                       {comment.username === name ? (
                         <EditableComment
                           comment={comment}
@@ -364,19 +435,24 @@ function CommunityDetail() {
                       ) : (
                         comment.content
                       )}
-                      <CommentCommentBtnBox>
-                        <button onClick={() => handleReplyClick(comment.id)}>답글</button>
-                      </CommentCommentBtnBox>
-                    </CommentDetail>
-                  </CommentBox>
+                    </CommentContent>
 
-                  {comments
-                    .filter((cComment) => cComment.parentId === comment.id)
-                    .map((cComment) => (
-                      <div key={cComment.id} style={{ paddingLeft: "16px" }}>
-                        <CCommentBox>
-                          <CCommentUserInfo>{cComment.username} | </CCommentUserInfo>
-                          <CCommentDetail>
+                    <CommentActions>
+                      <ReplyButton onClick={() => handleReplyClick(comment.id)}>
+                        {replyTargetId === comment.id ? '답글 취소' : '답글 달기'}
+                      </ReplyButton>
+                      {comments.some(c => c.parentId === comment.id) && (
+                        <ReplyButton onClick={() => toggleReplyVisibility(comment.id)}>
+                          {replyVisibleId === comment.id ? '답글 숨기기' : '답글 펼치기'}
+                        </ReplyButton>
+                      )}
+                    </CommentActions>
+                    {replyVisibleId === comment.id && comments
+                      .filter(cComment => cComment.parentId === comment.id)
+                      .map(cComment => (
+                        <CCommentBox key={cComment.id}>
+                          <CCommentUserInfo>{cComment.username}</CCommentUserInfo>
+                          <CCommentContent>
                             {cComment.username === name ? (
                               <EditableComment
                                 comment={cComment}
@@ -386,60 +462,61 @@ function CommunityDetail() {
                             ) : (
                               cComment.content
                             )}
-                          </CCommentDetail>
+                          </CCommentContent>
                         </CCommentBox>
-                      </div>
-                    ))}
-
-                  {replyTargetId === comment.id && (
-                    <div style={{ paddingLeft: "16px", marginBottom: "10px" }}>
-                      <CommentInputWrapper>
+                      ))}
+                    {replyTargetId === comment.id && (
+                      <CommentInputWrapper style={{ marginLeft: "32px" }}>
                         <CommentTextarea
                           value={newCComment}
                           onChange={(e) => setNewCComment(e.target.value)}
-                          placeholder="대댓글을 입력하세요"
+                          placeholder="대댓글을 입력하세요 (최대 500자)"
                           maxLength={500}
-                          style={{ marginRight: "10px" }}
                         />
-                        <CommentButton onClick={() => handleCCommentAdd(comment.id)}>등록</CommentButton>
+                        <CommentButton onClick={() => handleCCommentAdd(comment.id)}>
+                          대댓글 작성
+                        </CommentButton>
                       </CommentInputWrapper>
-                    </div>
-                  )}
+                    )}
+                  </CommentBox>
                 </div>
               ))}
           </CommentMainBox>
         </MainCommDetailBox>
-      )}
+      )
+      }
 
-      {editMode && (
-        <MainCommDetailBox>
-          <CommDetailBtnBox>
-            <ComDetDelBtn type="button" value="완료" onClick={handlePostUpdate} />
-          </CommDetailBtnBox>
+      {
+        editMode && (
+          <MainCommDetailBox>
+            <CommDetailBtnBox>
+              <ComDetDelBtn type="button" value="완료" onClick={handlePostUpdate} />
+            </CommDetailBtnBox>
 
-          <CommDetailTitleBox>
-            <p>제목</p>
-            <input
-              type="text"
-              value={post.title}
-              onChange={(e) => setPost({ ...post, title: e.target.value })}
-              style={{ fontSize: '20px', width: '100%', paddingLeft: "10px", paddingTop: "10px", paddingBottom: "10px" }}
-            />
-          </CommDetailTitleBox>
+            <CommDetailTitleBox>
+              <p>제목</p>
+              <input
+                type="text"
+                value={post.title}
+                onChange={(e) => setPost({ ...post, title: e.target.value })}
+                style={{ fontSize: '20px', width: '100%', paddingLeft: "10px", paddingTop: "10px", paddingBottom: "10px" }}
+              />
+            </CommDetailTitleBox>
 
-          <CommDetailInfoBox>
-            <p style={{ color: "#538572" }}>내용</p>
-            <textarea
-              value={post.content}
-              onChange={(e) => setPost({ ...post, content: e.target.value })}
-              style={{ width: '100%', height: '300px', fontSize: '18px', paddingLeft: "10px", paddingTop: "10px", fontWeight: "regular" }}
-            />
-          </CommDetailInfoBox>
-        </MainCommDetailBox>
-      )}
+            <CommDetailInfoBox>
+              <p style={{ color: "#538572" }}>내용</p>
+              <textarea
+                value={post.content}
+                onChange={(e) => setPost({ ...post, content: e.target.value })}
+                style={{ width: '100%', height: '300px', fontSize: '18px', paddingLeft: "10px", paddingTop: "10px", fontWeight: "regular" }}
+              />
+            </CommDetailInfoBox>
+          </MainCommDetailBox>
+        )
+      }
 
       {loading && <Loading />}
-    </CommDetailContainer>
+    </CommDetailContainer >
   );
 }
 
@@ -456,7 +533,7 @@ const MainCommDetailBox = styled.div`
   width: 100%;
   max-width: 1200px;
   height: 90%;
-  margin-top: 130px;
+  margin-top: 120px;
 `;
 
 const CommDetailTitleBox = styled.div`
@@ -513,32 +590,11 @@ const CommentMainBox = styled.div`
   padding: 20px 0px 70px 0px;
 `;
 
-const CommentInputWrapper = styled.div`
+const CommentBtnBox = styled.div`
   display: flex;
-  margin-bottom: 10px;
-`;
-
-const CommentTextarea = styled.textarea`
-  flex: 1;
-  padding: 10px;
-  font-size: 16px;
-`;
-
-const CommentButton = styled.button`
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-`;
-
-const CommentBox = styled.div`
-  display: flex;
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
-`;
-
-const CommentUserInfo = styled.div`
-  margin-right: 10px;
-  font-weight: bold;
+  width: 100%;
+  justify-content: right;
+  padding-bottom: 80px;
 `;
 
 const CommentDetail = styled.div`
@@ -547,71 +603,162 @@ const CommentDetail = styled.div`
   justify-content: space-between;
 `;
 
-const CommentCommentBtnBox = styled.div`
-  display: flex;
-  width: 5%;
-  justify-content: center;
-  align-items: center;
-  button{
-    background-color: white;
-    border: 1px solid black;
-    padding: 3px;
-    cursor: pointer;
-  }
-`;
-
-const CCommentBox = styled.div`
-  display: flex;
-  padding: 10px 10px;
-  border-bottom: 1px solid #ddd;
-  background-color: #F1F1F1;
-`;
-
-const CCommentUserInfo = styled.div`
-  margin-right: 10px;
-  font-weight: bold;
-`;
-
-const CCommentDetail = styled.div`
-  display: flex;
-  flex: 1;
-  justify-content: space-between;
-`;
-
 const CommDetailBtnBox = styled.div`
   display: flex;
   width: 100%;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 `;
 
 const ComDetSetBtn = styled.input`
-  width: 130px;
-  height: 50px;
-  font-size: 20px;
-  border-radius: 20px;
+  width: 100px;
+  height: 38px;
+  font-size: 16px;
+  border-radius: 12px;
   background-color: #fff;
-  border: 1px solid #538572;
+  border: 2px solid #538572;
   cursor: pointer;
-  margin-left: 10px;
-  transition: all 0.2s;
-  &:hover{
-    background-color:rgb(228, 239, 235);
+  color: #538572;
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #e4efe9;
   }
 `;
 
 const ComDetDelBtn = styled.input`
-  width: 130px;
-  height: 50px;
-  font-size: 20px;
-  border-radius: 20px;
+  width: 100px;
+  height: 38px;
+  font-size: 16px;
+  border-radius: 12px;
   background-color: #538572;
-  border: 1px solid #538572;
+  border: 2px solid #538572;
   color: white;
   cursor: pointer;
-  margin-left: 10px;
-  transition: all 0.2s;
-  &:hover{
-    background-color:rgb(63, 106, 89);
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #3b6350;
+  }
+`;
+
+const CommentBox = styled.div`
+  position: relative;
+  background-color: #ffffff;
+  border: 1.5px solid #538572;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(83, 133, 114, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const CommentUserInfo = styled.div`
+  font-weight: 700;
+  color: #538572;
+  font-size: 14px;
+`;
+
+const CommentContent = styled.div`
+  font-size: 16px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #333;
+`;
+
+const CommentActions = styled.div`
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+`;
+
+const ReplyButton = styled.button`
+  background-color: transparent;
+  border: none;
+  color: #538572;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #cce5d5;
+  }
+`;
+
+const CCommentBox = styled.div`
+  background-color: #e9f1ec;
+  border-radius: 12px;
+  border: 1px solid #a3bfa5;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  margin-left: 32px;
+  box-shadow: inset 0 0 4px rgba(83, 133, 114, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const CCommentUserInfo = styled.div`
+  font-weight: 600;
+  color: #3b6350;
+  font-size: 13px;
+`;
+
+const CCommentContent = styled.div`
+  font-size: 15px;
+  color: #2a2a2a;
+  white-space: pre-wrap;
+  word-break: break-word;
+`;
+
+const CommentInputWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+`;
+
+const CommentTextarea = styled.textarea`
+  flex-grow: 1;
+  min-height: 48px;
+  border: 2px solid #538572;
+  border-radius: 15px;
+  padding: 12px 15px;
+  font-size: 15px;
+  resize: vertical;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #3b7a5b;
+    box-shadow: 0 0 6px #3b7a5baa;
+  }
+`;
+
+const CommentButton = styled.button`
+  background-color: #538572;
+  border: none;
+  border-radius: 50px;
+  padding: 0 20px;
+  font-size: 15px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  align-self: center;
+  height: 44px;
+
+  &:hover {
+    background-color: #3b6350;
+  }
+
+  &:disabled {
+    background-color: #9dbeb0;
+    cursor: not-allowed;
   }
 `;
