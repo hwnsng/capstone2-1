@@ -99,7 +99,6 @@ function Ai() {
       if (sessionIdRef.current) postData.sessionId = sessionIdRef.current;
 
       const res = await axios.post('http://127.0.0.1:8000/query', postData);
-      console.log('API 응답:', res.data);
       const fullText = res.data.source_summary || '답변이 없습니다.';
 
       if (!sessionIdRef.current && res.data.session_id) {
