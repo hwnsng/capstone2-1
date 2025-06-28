@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
-import Logo from '@/media/Logo.png';
+import Logo from '@/media/logo.png';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import useProfile from '@/hooks/useProfile';
