@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Loading from '@/components/loading/loading';
 import Banner from '@/components/Banner/Banner';
 import axios from 'axios';
-import HouseRecomend from '@/pages/Main/HouseRecomend';
-import CommunityRecomend from '@/pages/Main/CommunityRecomend';
+import HouseRecomend from '@/components/House/HouseRecomend';
+import CommunityRecomend from '@/components/Community/CommunityRecomend';
 import AiMenu from '@/media/aiMenu.png';
 import HouseMenu from '@/media/houseMenu.png';
 import MentorMenu from '@/media/mentorMenu.png';
@@ -16,8 +16,6 @@ function Main() {
   const navigate = useNavigate();
   const [CommInfo, setCommInfo] = useState([]);
   const [HouseInfo, setHouseInfo] = useState([]);
-  const [focusHouse, setFocusHouse] = useState(1);
-  const [focusCommunity, setFocusCommunity] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const menuData = [
@@ -88,9 +86,6 @@ function Main() {
         <Banner />
         <HouseRecomendTitleBox>
           <h1>주거공고</h1>
-          <span>
-            <h1 className={focusHouse === 1 ? "active" : ""} onClick={() => setFocusHouse(1)}>최신글</h1>•<h1 className={focusHouse === 2 ? "active" : ""} onClick={() => setFocusHouse(2)} >베스트글</h1>
-          </span>
         </HouseRecomendTitleBox>
         <HouseRecomendBox>
           {HouseInfo
@@ -109,9 +104,6 @@ function Main() {
         </HouseRecomendBox>
         <CommunityRecomendTitleBox>
           <h1>커뮤니티</h1>
-          <span>
-            <h1 className={focusCommunity === 1 ? "active" : ""} onClick={() => setFocusCommunity(1)}>최신글</h1>•<h1 className={focusCommunity === 2 ? "active" : ""} onClick={() => setFocusCommunity(2)} >베스트글</h1>
-          </span>
         </CommunityRecomendTitleBox>
         <CommunityRecomendBox>
           {CommInfo
@@ -168,30 +160,19 @@ const HouseRecomendBox = styled.div`
   height: 300px;
   justify-content: space-between;
   align-items: center;
-  margin: 30px 0;
 `;
 
 const HouseRecomendTitleBox = styled.div`
+  display: flex;
   width: 100%;
   margin: 0px;
-  margin-top: 50px;
+  margin-top: 40px;
   h1{
     font-size: 23px;
     font-weight: bold;
-  }
-  span{
-    display: flex;
-    margin-top: 10px;
-    cursor: pointer;
-    h1{
-      height: 25px;
-      color: #6D6D6D;
-      font-size: 20px;
-      &.active{
-        color: #000;
-        border-bottom: 10px solid #CBFFAE;
-      }
-    }
+    height: 25px;
+    color: #000;
+    border-bottom: 10px solid #CBFFAE;
   }
 `;
 
@@ -206,26 +187,15 @@ const CommunityRecomendBox = styled.div`
 `;
 
 const CommunityRecomendTitleBox = styled.div`
+  display: flex;
   width: 100%;
   margin: 0px;
-  margin-top: 50px;
   h1{
     font-size: 23px;
     font-weight: bold;
-  }
-  span{
-    display: flex;
-    margin-top: 10px;
-    cursor: pointer;
-    h1{
-      height: 25px;
-      color: #6D6D6D;
-      font-size: 20px;
-      &.active{
-        color: #000;
-        border-bottom: 10px solid #CBFFAE;
-      }
-    }
+    height: 25px;
+    color: #000;
+    border-bottom: 10px solid #CBFFAE;
   }
 `;
 

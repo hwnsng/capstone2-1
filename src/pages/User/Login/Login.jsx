@@ -1,27 +1,60 @@
-import styled from 'styled-components';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import useAuth from '@/hooks/useAuth';
-import Loading from '@/components/loading/loading';
 import { toast } from 'react-toastify';
+import Loading from '@/components/loading/loading';
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    setLoading(true);
-    e.preventDefault();
-    const result = await login(email, password);
-    if (result.success) {
-      setLoading(false);
-      navigate("/");
-      toast.success("로그인 되었습니다!");
-      window.location.reload();
+  const validateName = (value) => /^[a-zA-Z]+$/.test(value);
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || validateName(value)) {
+      setName(value);
     } else {
+      toast.warning("아이디는 영어 알파벳만 입력 가능합니다.");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (name.length < 4) {
+      toast.warning("아이디는 4글자 이상이어야 합니다.");
+      return;
+    }
+
+    if (!validateName(name)) {
+      toast.warning("아이디는 영어 알파벳만 입력 가능합니다.");
+      return;
+    }
+
+    if (!password) {
+      toast.warning("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await login(name, password);
+      if (result.success) {
+        navigate("/");
+        window.location.reload();
+      } else {
+        const errorMessages = Array.isArray(result.error) ? result.error : [result.error];
+        errorMessages.forEach(msg => toast.error(msg));
+      }
+    } catch (err) {
+      console.error("로그인 오류:", err);
+      toast.error("로그인에 실패했습니다.");
+    } finally {
       setLoading(false);
     }
   };
@@ -32,16 +65,22 @@ function Login() {
         <LoginTitle>로그인</LoginTitle>
         <form onSubmit={handleSubmit}>
           <LoginInputBox>
-            <LoginInputTitleBox>
-              <LoginInputTitle>아이디</LoginInputTitle>
-            </LoginInputTitleBox>
-            <LoginInput type="text" value={email} placeholder='아이디를 입력해주세요.' onChange={(e) => setEmail(e.target.value)} />
+            <LoginInputTitle>아이디</LoginInputTitle>
+            <LoginInput
+              type="text"
+              value={name}
+              placeholder="아이디를 입력해주세요 (4글자 이상)"
+              onChange={handleNameChange}
+            />
           </LoginInputBox>
           <LoginInputBox>
-            <LoginInputTitleBox>
-              <LoginInputTitle>비밀번호</LoginInputTitle>
-            </LoginInputTitleBox>
-            <LoginInput type="password" value={password} placeholder='비밀번호를 입력해주세요.' onChange={(e) => setPassword(e.target.value)} />
+            <LoginInputTitle>비밀번호</LoginInputTitle>
+            <LoginInput
+              type="password"
+              value={password}
+              placeholder="비밀번호를 입력해주세요"
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </LoginInputBox>
           <LoginBtnBox>
             <LoginBtn type="button" value="뒤로" onClick={() => navigate(-1)} />
@@ -51,7 +90,9 @@ function Login() {
         <LoginBottomMainBox>
           <LoginBotBox>
             <LoginBotMenu>
-              <p>회원가입은 <span onClick={() => navigate('/signup')}>여기</span>에서 할 수 있습니다.</p>
+              <p>
+                회원가입은 <span onClick={() => navigate('/signup')}>여기</span>에서 할 수 있습니다.
+              </p>
             </LoginBotMenu>
           </LoginBotBox>
         </LoginBottomMainBox>
@@ -65,124 +106,124 @@ export default Login;
 
 const LoginContainer = styled.div`
   display: flex;
-  width: 99vw;
+  justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
-  justify-content: center;
+  background-color: #f8f8f8;
+  padding: 20px;
 `;
+
 const MainLoginBox = styled.div`
-  justify-content: center;
-  width: 80%;
-  height: 80%;
-  margin-top: 120px;
+  width: 100%;
+  max-width: 1200px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 140px;
 `;
+
 const LoginTitle = styled.h1`
-  display: flex;
-  justify-content: center;
-  font-size: 40px;
+  font-size: 36px;
   font-weight: bold;
-  margin: 30px 0px;
   color: #538572;
+  text-align: center;
+  margin-bottom: 32px;
+  font-family: 'Noto Sans KR', sans-serif;
 `;
+
 const LoginInputBox = styled.div`
-  display: flex;
-  height: 90px;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  justify-content: center;
-  align-items: center;
-  margin-top: 40px;
+  margin-bottom: 24px;
 `;
-const LoginInputTitleBox = styled.div`
-  display: flex;
-  width: 15%;
-  justify-content: left;
-`;
+
 const LoginInputTitle = styled.p`
-  font-size: 23px;
-  font-weight: bold;
-  color: #538572;
-`;
-const LoginInput = styled.input`
-  width: 60%;
-  height: 45px;
   font-size: 18px;
-  padding-left: 15px;
+  font-weight: 600;
+  color: #538572;
+  margin-bottom: 8px;
+`;
+
+const LoginInput = styled.input`
+  width: 100%;
+  height: 48px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #a7c8b7;
   border-radius: 8px;
-  border: 1px solid #ccc;
   outline: none;
-  transition: border-color 0.2s ease;
+  background-color: #f4fdfa;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
   &:focus {
     border-color: #538572;
+    box-shadow: 0 0 8px rgba(83, 133, 114, 0.4);
+  }
+
+  &::placeholder {
+    color: #a7c8b7;
   }
 `;
+
 const LoginBtnBox = styled.div`
   display: flex;
-  width: 100%;
-  margin-top: 30px;
   justify-content: center;
-  align-items: center;
+  gap: 20px;
+  margin-top: 32px;
 `;
-const LoginBtn = styled.input`
-  display: flex;
-  width: 130px;
-  height: 50px;
-  border-radius: 25px;
-  justify-content: center;
-  align-items: center;
-  font-size: 23px;
-  color: white;
-  cursor: pointer;
-  margin: 0px 20px;
-  background-color: #538572;
-  border: none;
-  transition: background-color 0.2s ease;
 
-  &:hover {
-    background-color: #406a5b;
-  }
+const LoginBtn = styled.input`
+  width: 140px;
+  height: 48px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
 
   &:first-child {
-    background-color: white;
+    background-color: #ffffff;
     color: #538572;
     border: 2px solid #538572;
+    &:hover {
+      background-color: #e4efe8;
+    }
   }
 
-  &:first-child:hover {
-    background-color: #f5f5f5;
-  }
-`;
-const LoginBotMenu = styled.div`
-  display: block;
-  margin-top: 20px;
-  text-align: center;
-
-  p {
-    font-size: 14px;
-    margin-top: 10px;
-
-    span {
-      font-weight: bold;
-      color: #538572;
-      cursor: pointer;
-      transition: color 0.2s ease;
-
-      &:hover {
-        color: #406a5b;
-        text-decoration: underline;
-      }
+  &:last-child {
+    background-color: #538572;
+    color: white;
+    &:hover {
+      background-color: #406a5b;
     }
   }
 `;
+
 const LoginBottomMainBox = styled.div`
   display: flex;
-  width: 100%;
   justify-content: center;
+  margin-top: 32px;
 `;
+
 const LoginBotBox = styled.div`
-  display: flex;
-  width: 35%;
-  border-top: 1px solid black;
-  margin-top: 30px;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
+  border-radius: 8px;
+`;
+
+const LoginBotMenu = styled.div`
+  font-size: 16px;
+  color: #666;
+  p {
+    margin: 0;
+    span {
+      color: #538572;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      &:hover {
+        color: #406a5b;
+      }
+    }
+  }
 `;

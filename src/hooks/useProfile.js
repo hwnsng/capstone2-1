@@ -80,8 +80,8 @@ const useProfile = () => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+      navigate("/signin");
       toast.success("로그아웃 되었습니다.");
-      navigate("/");
     } catch (error) {
       toast.error("로그아웃 실패");
       console.error(error);

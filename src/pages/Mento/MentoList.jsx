@@ -40,6 +40,7 @@ function MentoList() {
               key={idx}
               userProfile={mento.metor_img}
               MentoName={mento.mentor_name}
+              introduce={mento.introduce}
             />
           ))}
         </MentoListMenuBox>

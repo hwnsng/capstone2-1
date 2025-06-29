@@ -100,7 +100,7 @@ export default Header;
 const MainHeadContainer = styled.div`
   display: flex;
   position: fixed;
-  width: 99vw;
+  width: 98vw;
   height: 90px;
   border-bottom: 1px solid rgb(222, 222, 222);
   justify-content: center;

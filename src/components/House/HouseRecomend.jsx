@@ -1,29 +1,30 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-function HouseMenu({ houseImage, houseTitle, houseId, region }) {
+function HouseRecomend({ HouseTitle, Region, HouseId, HouseImg }) {
   const navigate = useNavigate();
   return (
-    <Wrapper onClick={() => navigate(`/housedetail/${houseId}`)}>
+    <Wrapper onClick={() => navigate(`/housedetail/${HouseId}`)}>
       <HouseMenuContainer>
         <HouseMenuImgBox>
-          <img src={houseImage} alt="집 이미지" />
-          <RegionOverlay>{region}</RegionOverlay>
+          <img src={HouseImg} alt="집 이미지" />
+          <RegionOverlay>{Region}</RegionOverlay>
         </HouseMenuImgBox>
       </HouseMenuContainer>
-      <TitleText>{houseTitle}</TitleText>
+      <TitleText>{HouseTitle}</TitleText>
     </Wrapper>
   );
 }
 
-export default HouseMenu;
+export default HouseRecomend;
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 23%;
   cursor: pointer;
+  padding-bottom: 20px;
   transition: all 0.2s;
-  &:hover {
-    transform: scale(1.05);
+    &:hover{
+    transform: scale(1.1);
   }
 `;
 
@@ -40,10 +41,10 @@ const HouseMenuImgBox = styled.div`
   width: 100%;
   height: 100%;
   img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
   }
 `;
 

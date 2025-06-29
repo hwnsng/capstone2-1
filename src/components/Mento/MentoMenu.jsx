@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-function MentoMenu({ userProfile, MentoName, onClick }) {
+function MentoMenu({ userProfile, MentoName, introduce, onClick }) {
   const navigate = useNavigate();
   return (
     <MentoMenuContainer onClick={onClick ?? (() => navigate('/mentodetail'))}>
@@ -11,6 +11,9 @@ function MentoMenu({ userProfile, MentoName, onClick }) {
       <MentoMenuUserNameBox>
         <h1>{MentoName}</h1>
       </MentoMenuUserNameBox>
+      <MentoMenuUserIntroBox>
+        <p>{introduce}</p>
+      </MentoMenuUserIntroBox>
     </MentoMenuContainer>
   );
 }
@@ -59,5 +62,24 @@ const MentoMenuUserNameBox = styled.div`
     font-size: 18px;
     font-weight: bold;
     color: #538572;
+  }
+`;
+
+const MentoMenuUserIntroBox = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 16px 16px 16px;
+
+  p {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;

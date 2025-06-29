@@ -78,12 +78,11 @@ const HouseMainTitleBox = styled.div`
 
 const HouseMenuMainBox = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 50px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
   width: 100%;
   margin-top: 40px;
 `;
-
 
 const HouseCreateBtnBox = styled.div`
   display: flex;

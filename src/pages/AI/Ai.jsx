@@ -139,6 +139,11 @@ function Ai() {
       <AiContainer>
         <AiMainBox>
           <AiChatBox>
+            {chatHistory.length === 0 && !loading && (
+              <AiIntro>
+                <p>의성에 대해 궁금한 점을 질문하세요!</p>
+              </AiIntro>
+            )}
             {chatHistory.map((msg, i) =>
               msg.type === 'user' ? (
                 <AiChatMe key={i}>
@@ -307,5 +312,16 @@ const LoadingDots = styled.div`
     40% {
       transform: scale(1.5);
     }
+  }
+`;
+
+const AiIntro = styled.div`
+  text-align: center;
+  font-size: 35px;
+  margin: 60px 0;
+  line-height: 1.8;
+  color: #538572;
+  p {
+    margin: 0;
   }
 `;
