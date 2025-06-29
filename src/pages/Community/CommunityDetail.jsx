@@ -369,11 +369,7 @@ function CommunityDetail() {
           {my && (
             <CommDetailBtnBox>
               <ComDetSetBtn type="button" value="수정" onClick={ClickedUpdate} />
-              <ComDetDelBtn
-                type="button"
-                value="삭제"
-                onClick={confirmPostDelete}
-              />
+              <ComDetDelBtn type="button" value="삭제" onClick={confirmPostDelete} />
             </CommDetailBtnBox>
           )}
 
@@ -388,9 +384,7 @@ function CommunityDetail() {
           </CommSubTitleBox>
 
           <CommDetailInfoBox>
-            <p>
-              {post.content}
-            </p>
+            <p>{post.content}</p>
             {post.imageUrls.length != 0 &&
               <img src={post.imageUrls} />
             }
@@ -490,7 +484,7 @@ function CommunityDetail() {
         editMode && (
           <MainCommDetailBox>
             <CommDetailBtnBox>
-              <ComDetDelBtn type="button" value="완료" onClick={handlePostUpdate} />
+              <ComDetSetBtn type="button" value="완료" onClick={handlePostUpdate} />
             </CommDetailBtnBox>
 
             <CommDetailTitleBox>
@@ -524,77 +518,120 @@ export default CommunityDetail;
 
 const CommDetailContainer = styled.div`
   display: flex;
-  width: 99vw;
   justify-content: center;
   min-height: 100vh;
+  background-color: #f8f8f8;
+  padding: 40px 20px;
 `;
 
 const MainCommDetailBox = styled.div`
   width: 100%;
   max-width: 1200px;
-  height: 90%;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-top: 120px;
 `;
 
 const CommDetailTitleBox = styled.div`
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   p {
-    font-size: 25px;
+    font-size: 26px;
     font-weight: bold;
-    margin-bottom: 10px;
     color: #538572;
+    margin-bottom: 12px;
+  }
+  input {
+    width: 100%;
+    font-size: 20px;
+    padding: 12px;
+    border: 1px solid #a7c8b7;
+    border-radius: 8px;
+    background-color: #f4fdfa;
+    font-family: 'Noto Sans KR', sans-serif;
+    &:focus {
+      outline: none;
+      border-color: #538572;
+      box-shadow: 0 0 8px rgba(83, 133, 114, 0.3);
+    }
   }
 `;
 
 const CommSubTitleBox = styled.div`
-  font-size: 16px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid black;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #a7c8b7;
 `;
 
 const CommDetailSubTitle = styled.p`
   font-size: 16px;
+  color: #666;
+  font-family: 'Noto Sans KR', sans-serif;
 `;
 
 const CommDetailInfoBox = styled.div`
-  font-size: 16px;
   min-height: 300px;
-  border-bottom: 2px solid black;
-  p{
+  margin-bottom: 24px;
+  border-bottom: 1px solid #a7c8b7;
+  p {
     font-size: 17px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-weight: 600;
+    color: #538572;
+    margin-bottom: 12px;
   }
-  img{
-    width: 380px;
-    height: 330px;
-    padding-bottom: 20px;
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  textarea {
+    width: 100%;
+    height: 400px;
+    font-size: 16px;
+    padding: 12px;
+    border: 1px solid #a7c8b7;
+    border-radius: 8px;
+    background-color: #f4fdfa;
+    font-family: 'Noto Sans KR', sans-serif;
+    resize: vertical;
+    &:focus {
+      outline: none;
+      border-color: #538572;
+      box-shadow: 0 0 8px rgba(83, 133, 114, 0.3);
+    }
   }
 `;
 
 const LikeBtnBox = styled.div`
   display: flex;
   align-items: center;
-  font-size: 25px;
+  gap: 12px;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 28px;
 `;
 
 const LikeBtn = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 25px;
+  font-size: 26px;
+  transition: transform 0.2s ease;
+  &:hover {
+    transform: scale(1.2);
+  }
 `;
 
 const CommentMainBox = styled.div`
-  padding: 20px 0px 70px 0px;
+  padding: 28px 0;
 `;
 
 const CommentBtnBox = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: right;
-  padding-bottom: 80px;
+  justify-content: flex-end;
+  margin-bottom: 24px;
 `;
 
 const CommentDetail = styled.div`
@@ -605,160 +642,168 @@ const CommentDetail = styled.div`
 
 const CommDetailBtnBox = styled.div`
   display: flex;
-  width: 100%;
   justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
 `;
 
 const ComDetSetBtn = styled.input`
-  width: 100px;
-  height: 38px;
+  width: 120px;
+  height: 48px;
   font-size: 16px;
-  border-radius: 12px;
-  background-color: #fff;
+  border-radius: 10px;
+  background-color: #ffffff;
   border: 2px solid #538572;
   cursor: pointer;
   color: #538572;
-  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.3s ease;
   &:hover {
-    background-color: #e4efe9;
+    background-color: #e4efe8;
   }
 `;
 
 const ComDetDelBtn = styled.input`
-  width: 100px;
-  height: 38px;
+  width: 120px;
+  height: 48px;
   font-size: 16px;
-  border-radius: 12px;
-  background-color: #538572;
-  border: 2px solid #538572;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #538572 0%, #406a5b 100%);
+  border: none;
   color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.3s ease;
   &:hover {
-    background-color: #3b6350;
+    background: linear-gradient(135deg, #406a5b 0%, #2f4c42 100%);
   }
 `;
 
 const CommentBox = styled.div`
-  position: relative;
   background-color: #ffffff;
-  border: 1.5px solid #538572;
+  border: 1px solid #a7c8b7;
   border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 2px 6px rgba(83, 133, 114, 0.15);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(83, 133, 114, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  transition: border-color 0.3s ease;
+  &:hover {
+    border-color: #8aa89a;
+  }
 `;
 
 const CommentUserInfo = styled.div`
-  font-weight: 700;
+  font-weight: 600;
   color: #538572;
-  font-size: 14px;
+  font-size: 15px;
 `;
 
 const CommentContent = styled.div`
   font-size: 16px;
-  line-height: 1.4;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
   color: #333;
 `;
 
 const CommentActions = styled.div`
-  margin-top: 6px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const ReplyButton = styled.button`
   background-color: transparent;
-  border: none;
+  border: 1px solid #a7c8b7;
   color: #538572;
   font-weight: 600;
   cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 20px;
-  transition: background-color 0.2s ease;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   font-size: 14px;
-
+  font-family: 'Noto Sans KR', sans-serif;
   &:hover {
-    background-color: #cce5d5;
+    background-color: #e4efe8;
+    border-color: #538572;
   }
 `;
 
 const CCommentBox = styled.div`
-  background-color: #e9f1ec;
+  background-color: #f4fdfa;
+  border: 1px solid #a7c8b7;
   border-radius: 12px;
-  border: 1px solid #a3bfa5;
-  padding: 10px 16px;
-  margin-bottom: 12px;
-  margin-left: 32px;
-  box-shadow: inset 0 0 4px rgba(83, 133, 114, 0.1);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  margin-left: 40px;
+  box-shadow: 0 1px 6px rgba(83, 133, 114, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  transition: border-color 0.3s ease;
+  &:hover {
+    border-color: #8aa89a;
+  }
 `;
 
 const CCommentUserInfo = styled.div`
   font-weight: 600;
-  color: #3b6350;
-  font-size: 13px;
+  color: #406a5b;
+  font-size: 14px;
 `;
 
 const CCommentContent = styled.div`
   font-size: 15px;
-  color: #2a2a2a;
+  color: #333;
   white-space: pre-wrap;
   word-break: break-word;
 `;
 
 const CommentInputWrapper = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
 `;
 
 const CommentTextarea = styled.textarea`
   flex-grow: 1;
-  min-height: 48px;
-  border: 2px solid #538572;
-  border-radius: 15px;
-  padding: 12px 15px;
-  font-size: 15px;
+  min-height: 60px;
+  border: 1px solid #a7c8b7;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
   resize: vertical;
-  font-family: inherit;
-
+  background-color: #f4fdfa;
+  font-family: 'Noto Sans KR', sans-serif;
   &:focus {
     outline: none;
-    border-color: #3b7a5b;
-    box-shadow: 0 0 6px #3b7a5baa;
+    border-color: #538572;
+    box-shadow: 0 0 6px rgba(83, 133, 114, 0.3);
+  }
+  &::placeholder {
+    color: #a7c8b7;
   }
 `;
 
 const CommentButton = styled.button`
-  background-color: #538572;
+  background: linear-gradient(135deg, #538572 0%, #406a5b 100%);
   border: none;
-  border-radius: 50px;
-  padding: 0 20px;
-  font-size: 15px;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
-  align-self: center;
-  height: 44px;
-
+  transition: background 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+  align-self: flex-start;
+  height: 50px;
   &:hover {
-    background-color: #3b6350;
+    background: linear-gradient(135deg, #406a5b 0%, #2f4c42 100%);
   }
-
   &:disabled {
-    background-color: #9dbeb0;
+    background: #9dbeb0;
     cursor: not-allowed;
   }
 `;
