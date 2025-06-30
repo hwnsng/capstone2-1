@@ -13,19 +13,33 @@ function MentoCreate() {
   const introducePosts = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors", {
+      const res = await axios.post("https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors", {
         introduce
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         }
       });
-      setIntroduce(response.data.content);
-      toast.success("멘토 등록이 완료되었습니다");
-      setLoading(false);
-      navigate("/mentolist");
+      setIntroduce(res.data.content);
+      if (res.data.statusCode === 400) {
+        toast.error("이미 등록된 멘토입니다.");
+      } else if (!localStorage.getItem("accessToken")) {
+        toast.error("로그인이 필요한 서비스입니다.");
+      } else {
+        toast.success("멘토 등록이 완료되었습니다");
+        navigate("/mentolist");
+      }
     } catch (err) {
+      if (err.status === 400) {
+        toast.error("이미 등록된 멘토입니다.");
+      } else if (!localStorage.getItem("accessToken")) {
+        toast.error("로그인이 필요한 서비스입니다.");
+      } else {
+        toast.success("멘토 등록이 완료되었습니다");
+        navigate("/mentolist");
+      }
       console.error('게시글 불러오기 실패:', err);
+    } finally {
       setLoading(false);
     }
   };

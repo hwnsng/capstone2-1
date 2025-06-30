@@ -91,8 +91,12 @@ function HouseCreate() {
       toast.success('주택 등록 성공!');
       navigate('/house');
     } catch (error) {
+      if (localStorage.getItem("acessToken")) {
+        toast.error('주거 공고 등록에 실패했습니다.');
+      } else {
+        toast.error("로그인이 필요한 서비스입니다.");
+      }
       console.error(error);
-      toast.error('등록 실패했습니다.');
     } finally {
       setIsLoading(false);
     }

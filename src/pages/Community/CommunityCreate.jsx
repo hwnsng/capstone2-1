@@ -55,9 +55,13 @@ function CommunityCreate() {
       navigate('/community?category=0');
       toast.success("게시글이 등록되었습니다.");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || '게시글 등록 중 오류가 발생했습니다.';
+      if (localStorage.getItem("accessToken")) {
+        const errorMessage = err.response?.data?.message || '게시글 등록 중 오류가 발생했습니다.';
+        toast.error(errorMessage);
+      } else {
+        toast.error("로그인이 필요한 서비스입니다.");
+      }
       console.error('게시글 등록 실패:', err.response?.data || err.message);
-      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
