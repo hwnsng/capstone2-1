@@ -4,7 +4,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import Loading from '@/components/loading/loading';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 function Chat() {
   const navigate = useNavigate();
@@ -47,10 +47,53 @@ function Chat() {
     }, 0);
   };
 
+  const confirmPostDelete = () => {
+    toast.info(
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <span style={{ marginBottom: '10px' }}>정말 채팅방을 나가시겠습니까?</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => {
+              toast.dismiss();
+              handleLeaveChat();
+            }}
+            style={{
+              backgroundColor: '#538572',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            확인
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{
+              backgroundColor: '#ccc',
+              color: '#333',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            취소
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        hideProgressBar: true,
+        closeButton: false,
+      }
+    );
+  };
   const handleLeaveChat = async () => {
-    const confirmLeave = window.confirm("정말 이 채팅방을 나가시겠습니까?");
-    if (!confirmLeave) return;
-
     setLoading(true);
     try {
       await axios.delete(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats/${chatUserId}`, {
@@ -187,7 +230,7 @@ function Chat() {
         <ChatSection>
           <ChatHeader>
             <h2>{chatUserName}</h2>
-            <LeaveButton onClick={handleLeaveChat}>채팅방 나가기</LeaveButton>
+            <LeaveButton onClick={confirmPostDelete}>채팅방 나가기</LeaveButton>
           </ChatHeader>
 
           <ChatMessages ref={chatContentRef} onScroll={() => {
