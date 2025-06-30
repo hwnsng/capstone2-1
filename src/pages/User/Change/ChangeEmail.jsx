@@ -56,7 +56,7 @@ function FindPasswd() {
     } catch (err) {
       setError(err);
       if (err.response) {
-        toast.error("비밀번호 변경중 오류가 발생했습니다. 다시 시도해주세요.");
+        toast.error("이메일 변경중 오류가 발생했습니다. 다시 시도해주세요.");
       } else {
         toast.error("서버와의 연결이 끊어졌습니다. 나중에 다시 시도해주세요.");
       }

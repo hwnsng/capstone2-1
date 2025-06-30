@@ -539,7 +539,6 @@ const CommDetailTitleBox = styled.div`
   p {
     font-size: 26px;
     font-weight: bold;
-    color: #538572;
     margin-bottom: 12px;
   }
   input {
@@ -566,7 +565,7 @@ const CommSubTitleBox = styled.div`
 
 const CommDetailSubTitle = styled.p`
   font-size: 16px;
-  color: #666;
+  color: #538572;
   font-family: 'Noto Sans KR', sans-serif;
 `;
 
@@ -577,7 +576,6 @@ const CommDetailInfoBox = styled.div`
   p {
     font-size: 17px;
     font-weight: 600;
-    color: #538572;
     margin-bottom: 12px;
   }
   img {

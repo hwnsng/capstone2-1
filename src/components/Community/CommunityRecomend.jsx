@@ -1,78 +1,80 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-function HouseRecomend({ CommunityTitle, Content, Author, CommunityId }) {
+function CommunityCard({ CommunityTitle, Content, Author, CommunityId }) {
   const navigate = useNavigate();
 
   return (
-    <CommunityMenuContainer onClick={() => navigate(`/community/${CommunityId}`)}>
-      <CommunityMenuInfoBox >
-        <CommunityMenuInfoTitle>
-          <h1>제목 : {CommunityTitle}</h1>
-        </CommunityMenuInfoTitle>
-        <CommunityMenuContent>
-          <h1>내용 : {Content}</h1>
-        </CommunityMenuContent>
-        <CommunityMenuUser>
-          <h1>작성자 - {Author}</h1>
-        </CommunityMenuUser>
-      </CommunityMenuInfoBox>
-    </CommunityMenuContainer>
-  )
+    <Card onClick={() => navigate(`/community/${CommunityId}`)}>
+      <Title>{CommunityTitle}</Title>
+      <ContentText>{Content}</ContentText>
+      <BottomSection>
+        <Divider />
+        <AuthorText>{Author}</AuthorText>
+      </BottomSection>
+    </Card>
+  );
 }
 
-export default HouseRecomend;
+export default CommunityCard;
 
-const CommunityMenuContainer = styled.div`
-  width: 23%;
-  height: 110px;
-  border-radius: 15px;
-  border: 1px solid black;
+const Card = styled.div`
+  width: 280px;
+  height: 160px;
+  background-color: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
   cursor: pointer;
-`;
-
-const CommunityMenuInfoBox = styled.div`
-  width: 100%;
-  height: 40%;
-  padding: 0px 13px 0px 13px;
-  padding-top: 17px;
-`;
-
-const CommunityMenuInfoTitle = styled.div`
+  padding: 18px 16px 14px 16px;
   display: flex;
-  width: 100%;
-  h1 {
-    font-size: 15px;
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid #e1f0e7;
+
+  &:hover {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
   }
 `;
 
-const CommunityMenuUser = styled.div`
-  display: flex;
-  width: 100%;
-  margin-top: 11px;
-  h1 {
-    font-size: 11px;
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+const Title = styled.div`
+  font-size: 16px;
+  font-weight: 700;
+  color: #2e5f4d;
+  margin-bottom: 6px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const CommunityMenuContent = styled.div`
+const ContentText = styled.div`
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const BottomSection = styled.div`
   display: flex;
-  width: 100%;
-  margin-top: 11px;
-  h1 {
-    font-size: 13px;
-    color: #5C5A5A;
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Divider = styled.div`
+  flex-grow: 1;
+  height: 1px;
+  background-color: #cfe7db;
+  margin-right: 10px;
+  border-radius: 999px;
+`;
+
+const AuthorText = styled.div`
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b8f7e;
+  white-space: nowrap;
 `;

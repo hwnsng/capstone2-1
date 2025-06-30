@@ -61,6 +61,8 @@ function ChangePasswd() {
       if (err.response?.status === 401) {
         toast.error("로그인이 필요합니다. 다시 로그인해주세요.");
         navigate("/login");
+      } else if (err.response?.data.message === "인증코드 불일치") {
+        toast.error("인증코드가 잘못 되었습니다.");
       } else {
         const msg = err.response?.data?.message?.join('\n') ?? "비밀번호 변경 중 오류가 발생했습니다.";
         toast.error(msg);
