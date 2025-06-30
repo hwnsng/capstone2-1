@@ -52,27 +52,23 @@ function Ai() {
     setLoading(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
-      if (!sessionId) {
-        console.warn('sessionId가 localStorage에 없습니다.');
-        return;
-      }
+      if (!sessionId) return;
 
       sessionIdRef.current = sessionId;
 
-      const res = await axios.get(`http://127.0.0.1:8000/history?session_id=${sessionId}`);
+      const res = await axios.get(`http://127.0.0.1:8000/history`);
+      const conversations = res.data.conversations || [];
 
-      if (res.data && Array.isArray(res.data.history)) {
-        setChatHistory(
-          res.data.history.map((item) => ({
-            type: item.role === 'user' ? 'user' : 'ai',
-            text: item.text,
-          }))
-        );
+      const formattedHistory = conversations.flatMap((item) => [
+        { type: 'user', text: item.user_input },
+        { type: 'ai', text: item.bot_response?.source_summary || '답변이 없습니다.' },
+      ]);
 
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
-      }
+      setChatHistory(formattedHistory);
+
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     } catch (err) {
       console.error('fetchHistory 오류:', err);
     } finally {
@@ -101,6 +97,7 @@ function Ai() {
       const res = await axios.post('http://127.0.0.1:8000/query', postData);
       const fullText = res.data.source_summary || '답변이 없습니다.';
 
+      console.log(res);
       if (!sessionIdRef.current && res.data.session_id) {
         sessionIdRef.current = res.data.session_id;
         localStorage.setItem('sessionId', res.data.session_id);

@@ -11,6 +11,15 @@ function Policy() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [currentGroupStart, setCurrentGroupStart] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState({
+    progress: 0,
+    startAge: '',
+    endAge: '',
+    organ: '',
+  });
+  const [appliedFilters, setAppliedFilters] = useState(filters);
+  const [error, setError] = useState(null);
 
   const pageGroupSize = 5;
   const pageGroupEnd = Math.min(currentGroupStart + pageGroupSize - 1, totalPages);
@@ -20,24 +29,72 @@ function Policy() {
     (_, i) => currentGroupStart + i
   );
 
-  const fetchPolicy = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?page=${page}`);
-      setPolicyInfo(res.data.content);
-      setTotalPages(res.data.totalPages - 1 || 1);
-      console.log(res.data.content);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchPolicy = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { progress, startAge, endAge, organ } = appliedFilters;
+
+        const paramsObj = { page, progress };
+
+        if (startAge !== '') {
+          const parsedStartAge = parseInt(startAge, 10);
+          if (!isNaN(parsedStartAge)) paramsObj.startAge = parsedStartAge;
+          else throw new Error('시작 나이는 유효한 숫자여야 합니다.');
+        }
+        if (endAge !== '') {
+          const parsedEndAge = parseInt(endAge, 10);
+          if (!isNaN(parsedEndAge)) paramsObj.endAge = parsedEndAge;
+          else throw new Error('끝 나이는 유효한 숫자여야 합니다.');
+        }
+        if (organ && organ.trim() !== '') {
+          paramsObj.organ = organ.trim();
+        }
+        const queryString = Object.entries(paramsObj)
+          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+          .join('&');
+
+        const url = `https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?${queryString}`;
+
+        console.log('직접 만든 URL:', url);
+
+        const res = await axios.get(url);
+        console.log(res);
+
+        setPolicyInfo(res.data.content || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalCount(res.data.totalElements || 0);
+      } catch (err) {
+        console.error('API 요청 실패:', err);
+        setError(err.response?.data?.message || err.message || '서버 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPolicy();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [page]);
+  }, [page, appliedFilters]);
+
+  const handleSearch = () => {
+    const { startAge, endAge } = filters;
+
+    if (startAge !== '' && endAge !== '') {
+      const parsedStartAge = parseInt(startAge, 10);
+      const parsedEndAge = parseInt(endAge, 10);
+      if (isNaN(parsedStartAge) || isNaN(parsedEndAge)) {
+        setError('나이는 유효한 숫자여야 합니다.');
+        return;
+      }
+      if (parsedStartAge > parsedEndAge) {
+        setError('시작 나이는 끝 나이보다 작아야 합니다.');
+        return;
+      }
+    }
+
+    setAppliedFilters(filters);
+    setPage(1);
+  };
 
   return (
     <PolicyContainer>
@@ -45,11 +102,55 @@ function Policy() {
         <PolicyTitleBox>
           <PolicyTitle>지원 정책</PolicyTitle>
         </PolicyTitleBox>
+        <FilterBox>
+          <label>
+            상태:
+            <select
+              value={filters.progress}
+              onChange={(e) => setFilters({ ...filters, progress: Number(e.target.value) })}
+            >
+              <option value={0}>전체</option>
+              <option value={1}>신청 종료</option>
+              <option value={2}>신청 중</option>
+            </select>
+          </label>
+          <label>
+            나이:
+            <input
+              type="number"
+              placeholder="시작"
+              value={filters.startAge}
+              onChange={(e) => setFilters({ ...filters, startAge: e.target.value })}
+            />
+            ~
+            <input
+              type="number"
+              placeholder="끝"
+              value={filters.endAge}
+              onChange={(e) => setFilters({ ...filters, endAge: e.target.value })}
+            />
+          </label>
+          <label>
+            기관명:
+            <input
+              type="text"
+              placeholder="운영 기관"
+              value={filters.organ}
+              onChange={(e) => {
+                setFilters({ ...filters, organ: e.target.value });
+              }}
+            />
+          </label>
+          <FilterButton onClick={handleSearch}>검색</FilterButton>
+        </FilterBox>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {totalCount > 0 && (
+          <TotalCountText>총 {totalCount}건의 지원 정책이 있습니다.</TotalCountText>
+        )}
         {policyInfo.map((policy, index) => (
           <PolicyInfoContainer key={index}>
-            <PolicyInfoBox onClick={() => navigate(`/policydetail/${policy.plcyNo}?${page}`)}>
+            <PolicyInfoBox onClick={() => navigate(`/policydetail/${policy.plcyNo}?page=${page}`)}>
               <PolicyInfoTitleBox>{policy.plcyNm}</PolicyInfoTitleBox>
-
               {policy.plcyExplnCn && (
                 <PolicyInfo style={{ marginTop: '5px', fontWeight: '500', color: '#333' }}>
                   {policy.plcyExplnCn.length > 100
@@ -57,32 +158,31 @@ function Policy() {
                     : policy.plcyExplnCn}
                 </PolicyInfo>
               )}
-
-              <PolicyInfo>신청 기간 : {policy.bizPrdBgngYmd || '미정'} ~ {policy.bizPrdEndYmd || '미정'}</PolicyInfo>
+              <PolicyInfo>
+                신청 기간 : {policy.bizPrdBgngYmd || '미정'} ~ {policy.bizPrdEndYmd || '미정'}
+              </PolicyInfo>
               <PolicyInfo>운영 기관 : {policy.operInstCdNm || '정보 없음'}</PolicyInfo>
-              <PolicyInfo className={policy.end == true ? "ing" : "end"}>{policy.end == true ? "신청 중" : "신청 종료"}</PolicyInfo>
-
+              <PolicyInfo className={policy.end === true ? 'end' : 'ing'}>
+                {policy.end === true ? '신청 종료' : '신청 중'}
+              </PolicyInfo>
             </PolicyInfoBox>
           </PolicyInfoContainer>
         ))}
         <PaginationBox>
           <PageNumberBtn onClick={() => setCurrentGroupStart(1)} disabled={currentGroupStart === 1}>
-            &laquo;
+            «
           </PageNumberBtn>
-
           <PageNumberBtn
             onClick={() => setCurrentGroupStart(Math.max(1, currentGroupStart - pageGroupSize))}
             disabled={currentGroupStart === 1}
           >
-            &lsaquo;
+            ‹
           </PageNumberBtn>
-
           {visiblePages.map((p) => (
             <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
               {p}
             </PageNumberBtn>
           ))}
-
           <PageNumberBtn
             onClick={() =>
               setCurrentGroupStart(
@@ -91,21 +191,18 @@ function Policy() {
             }
             disabled={currentGroupStart + pageGroupSize > totalPages}
           >
-            &rsaquo;
+            ›
           </PageNumberBtn>
-
           <PageNumberBtn
             onClick={() =>
-              setCurrentGroupStart(totalPages - ((totalPages - 1) % pageGroupSize) + 1)
+              setCurrentGroupStart(totalPages - ((totalPages - 1) % pageGroupSize))
             }
             disabled={currentGroupStart + pageGroupSize > totalPages}
           >
-            &raquo;
+            »
           </PageNumberBtn>
         </PaginationBox>
-
       </PolicyMainBox>
-
       {loading && <Loading />}
     </PolicyContainer>
   );
@@ -147,6 +244,12 @@ const PolicyInfoContainer = styled.div`
   margin-top: 20px;
 `;
 
+const PolicyInfoTitleBox = styled.div`
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+`;
+
 const PolicyInfoBox = styled.div`
   width: 100%;
   background-color: white;
@@ -160,12 +263,6 @@ const PolicyInfoBox = styled.div`
     transform: translateY(-4px);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   }
-`;
-
-const PolicyInfoTitleBox = styled.div`
-  font-size: 22px;
-  font-weight: 600;
-  color: #333;
 `;
 
 const PolicyInfo = styled.div`
@@ -210,30 +307,53 @@ const PageNumberBtn = styled.button`
   }
 `;
 
-const Dots = styled.span`
-  font-size: 18px;
-  color: #999;
-  padding: 6px 10px;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-    color: #538572;
+const TotalCountText = styled.p`
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+  margin-bottom:  neighbor 20px;
+`;
+
+const FilterBox = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  label {
+    font-size: 14px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  input,
+  select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
   }
 `;
 
-const PageInput = styled.input`
-  width: 60px;
-  height: 32px;
-  font-size: 16px;
-  text-align: center;
-  border: 1px solid #538572;
+const FilterButton = styled.button`
+  background-color: #538572;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
   border-radius: 8px;
-  padding: 0 8px;
-  outline: none;
-  color: #333;
-  background-color: white;
-  &:focus {
-    border-color: #3b6350;
-    box-shadow: 0 0 0 2px rgba(83, 133, 114, 0.2);
+  cursor: pointer;
+  font-weight: bold;
+  &:hover {
+    background-color: #3e6d5f;
   }
+`;
+
+const ErrorMessage = styled.p`
+  text-align: center;
+  color: #d95151;
+  font-size: 16px;
+  margin-bottom: 20px;
 `;
