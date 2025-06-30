@@ -4,8 +4,10 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import Loading from '@/components/loading/loading';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'
 
 function Chat() {
+  const navigate = useNavigate();
   const chatContentRef = useRef(null);
   const [isAutoScroll, setIsAutoScroll] = useState(true);
   const [chatList, setChatList] = useState([]);
@@ -45,20 +47,37 @@ function Chat() {
     }, 0);
   };
 
+  const handleLeaveChat = async () => {
+    const confirmLeave = window.confirm("정말 이 채팅방을 나가시겠습니까?");
+    if (!confirmLeave) return;
+
+    setLoading(true);
+    try {
+      await axios.delete(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats/${chatUserId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
+      });
+      navigate('/mentolist');
+      toast.success("채팅방을 나갔습니다.");
+    } catch (err) {
+      console.error(err);
+      toast.error("채팅방 나가기를 실패했습니다.");
+    }
+  };
+
   const getChating = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        toast.error("로그인이 필요합니다");
+        toast.error('로그인이 필요합니다');
         return;
       }
 
       const res = await axios.get(
-        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        'https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats',
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!Array.isArray(res.data)) return;
@@ -102,11 +121,11 @@ function Chat() {
 
     setLoading(true);
 
-    const socket = io("https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/capstone", {
+    const socket = io('https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/capstone', {
       transportOptions: {
         polling: {
           extraHeaders: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         },
       },
@@ -124,244 +143,224 @@ function Chat() {
         message: msg.message,
       }));
       setMessages(parsedMessages);
-
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50);
-
+      setTimeout(() => scrollToBottom(), 50);
       setLoading(false);
     });
 
     socket.on('newChat', (data) => {
       if (String(data.user_id) === String(myUserId)) return;
-
       setMessages((prev) => [...prev, { sender: 'you', message: data.message }]);
-
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50);
+      setTimeout(() => scrollToBottom(), 50);
     });
 
-    socket.on('error_custom', (data) => {
-      toast.error(data.message);
-    });
+    socket.on('error_custom', (data) => toast.error(data.message));
+    socket.on('connect_error', (error) => console.error(error));
+    socket.on('disconnect', () => console.log('연결 종료'));
 
-    socket.on('connect_error', (error) => {
-      console.error(error);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('연결 종료');
-    });
-
-    return () => {
-      socket.disconnect();
-    };
+    return () => socket.disconnect();
   }, [isDataLoaded, chatUserId, myUserId]);
 
   return (
-    <ChatContainer>
-      <ChatSelectBox>
-        {chatList.map((chat) => (
-          <div
-            key={chat.chat_id}
-            className={chat.chat_id === chatUserId ? 'active' : ''}
-            onClick={() => {
-              if (chat.chat_id !== chatUserId) {
-                setChatUserId(chat.chat_id);
-                setChatUserName(chat.chat_partner || '알 수 없는 사용자');
-                setMessages([]);
-              }
-            }}
-          >
-            {chat.chat_partner || '알 수 없는 사용자'}
-          </div>
-        ))}
-      </ChatSelectBox>
+    <PageWrapper>
+      <ChatWrapper>
+        <Sidebar>
+          <SidebarHeader>채팅 목록</SidebarHeader>
+          <ChatList>
+            {chatList.map((chat) => (
+              <ChatListItem
+                key={chat.chat_id}
+                className={chat.chat_id === chatUserId ? 'active' : ''}
+                onClick={() => {
+                  if (chat.chat_id !== chatUserId) {
+                    setChatUserId(chat.chat_id);
+                    setChatUserName(chat.chat_partner || '알 수 없는 사용자');
+                    setMessages([]);
+                  }
+                }}
+              >
+                {chat.chat_partner || '알 수 없는 사용자'}
+              </ChatListItem>
+            ))}
+          </ChatList>
+        </Sidebar>
 
-      <ChatMainBox>
-        <ChatUserNameBox>
-          <h1>{chatUserName}</h1>
-        </ChatUserNameBox>
+        <ChatSection>
+          <ChatHeader>
+            <h2>{chatUserName}</h2>
+            <LeaveButton onClick={handleLeaveChat}>채팅방 나가기</LeaveButton>
+          </ChatHeader>
 
-        <ChatContentBox
-          ref={chatContentRef}
-          onScroll={() => {
+          <ChatMessages ref={chatContentRef} onScroll={() => {
             const el = chatContentRef.current;
-            const isAtBottom = el.scrollHeight - el.scrollTop === el.clientHeight;
-            setIsAutoScroll(isAtBottom);
-          }}
-        >
-          {messages.map((msg, idx) =>
-            msg.sender === 'me' ? (
-              <ChatMeBox key={idx}>
-                <div>{msg.message}</div>
-              </ChatMeBox>
-            ) : (
-              <ChatYouBox key={idx}>
-                <div>{msg.message}</div>
-              </ChatYouBox>
-            )
-          )}
-        </ChatContentBox>
+            setIsAutoScroll(el.scrollHeight - el.scrollTop === el.clientHeight);
+          }}>
+            {messages.map((msg, idx) => (
+              <MessageBubble key={idx} className={msg.sender}>
+                {msg.message}
+              </MessageBubble>
+            ))}
+          </ChatMessages>
 
-        <ChatDivider />
-        <ChatInputBox>
-          <form onSubmit={handleChatSubmit}>
+          <ChatInputForm onSubmit={handleChatSubmit}>
             <input
-              type='text'
-              placeholder='메시지를 입력하세요...'
+              type="text"
+              placeholder="메시지를 입력하세요..."
               value={chatInput}
               onChange={handleChatChange}
             />
-            <button type='submit'>↑</button>
-          </form>
-        </ChatInputBox>
-      </ChatMainBox>
+            <button type="submit">↑</button>
+          </ChatInputForm>
+        </ChatSection>
+      </ChatWrapper>
 
       {loading && <Loading />}
-    </ChatContainer>
+    </PageWrapper>
   );
 }
 
 export default Chat;
 
-const ChatContainer = styled.div`
+const PageWrapper = styled.div`
   display: flex;
-  width: 99vw;
-  max-width: 1200px;
-  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 89px);
   padding-top: 89px;
-  justify-content: center;
-  margin: 0 auto;
+  min-height: 100vh;
 `;
 
-const ChatSelectBox = styled.div`
-  width: 30%;
-  height: 100%;
+const ChatWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  height: 80vh;
   background-color: #fff;
-  border-right: 2px solid black;
-  border-left: 2px solid black;
-  div {
-    cursor: pointer;
-    display: flex;
-    width: 100%;
-    height: 60px;
-    font-size: 20px;
-    font-weight: bold;
-    justify-content: center;
-    align-items: center;
-    &.active {
-      background-color:rgb(238, 250, 246);
-      color: #538572;
-    }
-  }
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 `;
 
-const ChatUserNameBox = styled.div`
+const Sidebar = styled.div`
+  width: 30%;
+  border-right: 1px solid #ccc;
+  background-color: #f9f9f9;
   display: flex;
-  width: 100%;
-  height: 60px;
-  padding-left: 30px;
-  border-bottom: 2px solid black;
-  align-items: center;
-  margin-bottom: 30px;
-  h1 {
-    font-size: 25px;
-    font-weight: bold;
-    color: #538572;
-  }
+  flex-direction: column;
 `;
 
-const ChatMeBox = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: end;
-  margin-bottom: 5px;
-  div {
-    background-color: #538572;;
-    padding: 10px 20px;
-    color: white;
-    border-radius: 50px;
-    margin-right: 50px;
-  }
+const SidebarHeader = styled.div`
+  padding: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  background-color: #f3f3f3;
 `;
 
-const ChatYouBox = styled.div`
-  display: flex;
-  width: 100%;
-  margin-bottom: 5px;
-  div {
-    background-color: #e8e8e8;
-    padding: 10px 20px;
-    border-radius: 50px;
-    margin-left: 50px;
-  }
-`;
-
-
-const ChatMainBox = styled.div`
-  width: 95%;
-  height: 100%;
-  position: relative;
-`;
-
-const ChatContentBox = styled.div`
-  height: calc(100% - 110px);
+const ChatList = styled.div`
+  flex-grow: 1;
   overflow-y: auto;
-  padding-bottom: 80px;
 `;
 
-const ChatDivider = styled.div`
-  height: 1px;
-  background-color: #ddd;
-  width: 100%;
-  position: absolute;
-  bottom: 60px;
+const ChatListItem = styled.div`
+  padding: 16px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+  &.active {
+    background-color: #dfeeee;
+    color: #333;
+    font-weight: bold;
+  }
+  &:hover {
+    background-color: #ececec;
+  }
 `;
 
-const ChatInputBox = styled.div`
+const ChatSection = styled.div`
+  width: 70%;
   display: flex;
-  width: 100%;
-  height: 80px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  justify-content: center;
+  flex-direction: column;
+`;
+
+const ChatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  background-color: white;
+  padding: 16px 24px;
+  border-bottom: 1px solid #ccc;
+  background-color: #f8f8f8;
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+  }
+`;
+
+const LeaveButton = styled.button`
+  background-color: #d95151;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  &:hover {
+    background-color: #b43d3d;
+  }
+`;
+
+const ChatMessages = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #fafafa;
+`;
+
+const MessageBubble = styled.div`
+  display: block;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 18px;
+  background-color: #eee;
+  color: #333;
+  max-width: 60%;
+  width: fit-content;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+
+  &.me {
+    margin-left: auto;
+    background-color: #538572;
+    color: white;
+  }
+`;
+
+const ChatInputForm = styled.form`
+  display: flex;
+  padding: 16px;
   border-top: 1px solid #ccc;
-
-  form {
-    display: flex;
-    width: 90%;
-    height: 45px;
-    border: 1px solid #aaa;
-    border-radius: 30px;
-    overflow: hidden;
-
-    input {
-      width: 100%;
-      padding-left: 20px;
-      font-size: 17px;
-      border: none;
-      outline: none;
-    }
-
-    button {
-      display: flex;
-      font-size: 20px;
-      height: 35px;
-      width: 40px;
-      font-weight: bold;
-      background-color: #538572;
-      color: white;
-      justify-content: center;
-      align-items: center;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      margin: auto 10px;
+  background-color: #fff;
+  input {
+    flex-grow: 1;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-right: 10px;
+    outline: none;
+  }
+  button {
+    background-color: #538572;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    &:hover {
+      background-color: #3e6d5f;
     }
   }
 `;

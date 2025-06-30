@@ -15,28 +15,15 @@ function Community() {
   const [category, setCategory] = useState(1);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
-  const [leftInputVisible, setLeftInputVisible] = useState(false);
-  const [rightInputVisible, setRightInputVisible] = useState(false);
-  const [jumpPage, setJumpPage] = useState("");
+  const [currentGroupStart, setCurrentGroupStart] = useState(1);
+  const pageGroupSize = 5;
 
-  const handleJump = (e, side) => {
-    if (e.key === "Enter") {
-      const pageNum = parseInt(jumpPage);
-      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
-        setPage(pageNum);
-      }
-
-      if (side === "left") setLeftInputVisible(false);
-      if (side === "right") setRightInputVisible(false);
-      setJumpPage("");
+  useEffect(() => {
+    const expectedGroupStart = Math.floor((page - 1) / pageGroupSize) * pageGroupSize + 1;
+    if (currentGroupStart !== expectedGroupStart) {
+      setCurrentGroupStart(expectedGroupStart);
     }
-  };
-
-  const handleBlur = (side) => {
-    if (side === "left") setLeftInputVisible(false);
-    if (side === "right") setRightInputVisible(false);
-    setJumpPage("");
-  };
+  }, [page]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -150,51 +137,51 @@ function Community() {
         </CreateBtnBox>
 
         <PaginationBox>
-          {page > 3 && (
-            <>
-              <PageNumberBtn onClick={() => setPage(1)}>1</PageNumberBtn>
-              {!leftInputVisible ? (
-                <Dots onClick={() => setLeftInputVisible(true)}>...</Dots>
-              ) : (
-                <PageInput
-                  autoFocus
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={jumpPage}
-                  onChange={(e) => setJumpPage(e.target.value)}
-                  onKeyDown={(e) => handleJump(e, "left")}
-                  onBlur={() => handleBlur("left")}
-                />
-              )}
-            </>
-          )}
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((p) => Math.abs(p - page) <= 2)
+          <PageNumberBtn
+            onClick={() => setCurrentGroupStart(1)}
+            disabled={currentGroupStart === 1}
+          >
+            &laquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() => setCurrentGroupStart(Math.max(1, currentGroupStart - pageGroupSize))}
+            disabled={currentGroupStart === 1}
+          >
+            &lsaquo;
+          </PageNumberBtn>
+
+          {Array.from({ length: pageGroupSize }, (_, i) => currentGroupStart + i)
+            .filter((p) => p <= totalPages)
             .map((p) => (
-              <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
+              <PageNumberBtn
+                key={p}
+                onClick={() => setPage(p)}
+                className={p === page ? 'active' : ''}
+              >
                 {p}
               </PageNumberBtn>
             ))}
-          {page < totalPages - 2 && (
-            <>
-              {!rightInputVisible ? (
-                <Dots onClick={() => setRightInputVisible(true)}>...</Dots>
-              ) : (
-                <PageInput
-                  autoFocus
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={jumpPage}
-                  onChange={(e) => setJumpPage(e.target.value)}
-                  onKeyDown={(e) => handleJump(e, "right")}
-                  onBlur={() => handleBlur("right")}
-                />
-              )}
-              <PageNumberBtn onClick={() => setPage(totalPages)}>{totalPages}</PageNumberBtn>
-            </>
-          )}
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart((prev) =>
+                Math.min(prev + pageGroupSize, totalPages - ((totalPages - 1) % pageGroupSize))
+              )
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &rsaquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart(totalPages - ((totalPages - 1) % pageGroupSize) + 1)
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &raquo;
+          </PageNumberBtn>
         </PaginationBox>
       </MainCommBox>
       {loading && <Loading />}
@@ -349,27 +336,6 @@ const PageNumberBtn = styled.button`
     color: white;
     font-weight: bold;
   }
-`;
-
-const Dots = styled.span`
-  font-size: 18px;
-  padding: 6px 10px;
-  color: gray;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const PageInput = styled.input`
-  width: 50px;
-  height: 28px;
-  font-size: 16px;
-  padding: 0 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  text-align: center;
-  outline: none;
 `;
 
 const ComCreBtn = styled.input`

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Loading from '@/components/loading/loading';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useProfile from '@/hooks/useProfile';
 
 function MentoDetail() {
   const navigate = useNavigate();
@@ -12,24 +13,24 @@ function MentoDetail() {
   const [mentoIntroduce, setMentoIntroduce] = useState("");
   const [mentoProfile, setMentoProfile] = useState();
   const [loading, setLoading] = useState(false);
+  const [mentoMe, setMentoMe] = useState(null);
   const path = window.location.pathname;
   const mentoId = path.split("/")[2];
+  const { name } = useProfile();
 
   const getMentos = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`);
-      for (let i = 0; i < res.data.length; i++) {
-        if (res.data[i].mentor_id == mentoId) {
-          setMentoName(res.data[i].mentor_name);
-          setMentoIntroduce(res.data[i].introduce);
-          setMentoProfile(res.data[i].metor_img);
-          break;
-        }
+      const target = res.data.find(m => m.mentor_id == mentoId);
+      if (target) {
+        setMentoName(target.mentor_name);
+        setMentoIntroduce(target.introduce);
+        setMentoProfile(target.metor_img);
       }
-      setLoading(false);
     } catch (err) {
       console.error('게시글 불러오기 실패:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -43,18 +44,14 @@ function MentoDetail() {
             onClick={async () => {
               toast.dismiss();
               try {
-                const res = await axios.post(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`, {
+                await axios.post(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`, {
                   mentor_id: parseInt(mentoId),
                 }, {
                   headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`
                   }
                 });
-                if (res.data.statusCode == 400) {
-                  toast.success(res.data.message);
-                } else {
-                  navigate('/chat');
-                }
+                navigate('/chat');
               } catch (err) {
                 if (err.status == 401) {
                   toast.error("로그인이 필요한 서비스입니다");
@@ -89,6 +86,12 @@ function MentoDetail() {
     getMentos();
   }, []);
 
+  useEffect(() => {
+    if (mentoName && name) {
+      setMentoMe(mentoName === name);
+    }
+  }, [mentoName, name]);
+
   return (
     <MentoDetailContainer>
       <MentoDetailMainBox>
@@ -100,9 +103,11 @@ function MentoDetail() {
               {mentoName}
             </UserInfo>
           </ProfileBox>
-          <ButtonBox>
-            <button type="button" onClick={handleChatGo}>대화하기</button>
-          </ButtonBox>
+          {mentoMe === false && (
+            <ButtonBox>
+              <button type="button" onClick={handleChatGo}>대화하기</button>
+            </ButtonBox>
+          )}
         </HeaderBox>
         <SectionTitle>
           <h1>자기소개</h1>

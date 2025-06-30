@@ -1,28 +1,45 @@
 import styled from 'styled-components';
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 import HouseMenu from '@/components/House/HouseMenu.jsx';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Loading from '@/components/loading/loading';
 
 function House() {
   const navigate = useNavigate();
-  const page = 1;
   const [houses, setHouses] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentGroupStart, setCurrentGroupStart] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const pageGroupSize = 5;
+  const pageGroupEnd = Math.min(currentGroupStart + pageGroupSize - 1, totalPages);
+
+  const visiblePages = Array.from(
+    { length: pageGroupEnd - currentGroupStart + 1 },
+    (_, i) => currentGroupStart + i
+  );
 
   useEffect(() => {
     fetchHouse();
-  }, [location, page]);
+  }, [page]);
 
   const fetchHouse = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(
         `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses?page=${page}`
       );
       setHouses(res.data.houses);
+      setTotalPages(res.data.totalPages);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <HouseContainer>
       <HouseMainBox>
@@ -42,9 +59,48 @@ function House() {
             />
           ))}
         </HouseMenuMainBox>
+        <PaginationBox>
+          <PageNumberBtn onClick={() => setCurrentGroupStart(1)} disabled={currentGroupStart === 1}>
+            &laquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() => setCurrentGroupStart(Math.max(1, currentGroupStart - pageGroupSize))}
+            disabled={currentGroupStart === 1}
+          >
+            &lsaquo;
+          </PageNumberBtn>
+
+          {visiblePages.map((p) => (
+            <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
+              {p}
+            </PageNumberBtn>
+          ))}
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart(
+                Math.min(currentGroupStart + pageGroupSize, totalPages - ((totalPages - 1) % pageGroupSize))
+              )
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &rsaquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart(totalPages - ((totalPages - 1) % pageGroupSize) + 1)
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &raquo;
+          </PageNumberBtn>
+        </PaginationBox>
       </HouseMainBox>
+      {loading && <Loading />}
     </HouseContainer>
-  )
+  );
 }
 
 export default House;
@@ -69,7 +125,7 @@ const HouseMainTitleBox = styled.div`
   height: 50px;
   justify-content: center;
   align-items: center;
-  h1{
+  h1 {
     font-size: 40px;
     font-weight: bold;
     color: #538572;
@@ -90,7 +146,7 @@ const HouseCreateBtnBox = styled.div`
   height: 60px;
   justify-content: end;
   align-items: center;
-  button{
+  button {
     display: flex;
     width: 200px;
     height: 50px;
@@ -104,5 +160,33 @@ const HouseCreateBtnBox = styled.div`
     background-color: #538572;
     color: white;
     cursor: pointer;
+  }
+`;
+
+const PaginationBox = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+const PageNumberBtn = styled.button`
+  background: #ffffff;
+  color: #538572;
+  border: 1px solid #538572;
+  border-radius: 10px;
+  font-size: 16px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    background-color: #538572;
+    color: white;
+  }
+  &.active {
+    background-color: #538572;
+    color: white;
+    font-weight: bold;
   }
 `;

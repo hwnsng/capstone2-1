@@ -10,29 +10,15 @@ function Policy() {
   const [policyInfo, setPolicyInfo] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [leftInputVisible, setLeftInputVisible] = useState(false);
-  const [rightInputVisible, setRightInputVisible] = useState(false);
-  const [jumpPage, setJumpPage] = useState("");
+  const [currentGroupStart, setCurrentGroupStart] = useState(1);
 
-  const handleJump = (e, side) => {
-    if (e.key === "Enter") {
-      const pageNum = parseInt(jumpPage);
-      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
-        setPage(pageNum);
-      }
+  const pageGroupSize = 5;
+  const pageGroupEnd = Math.min(currentGroupStart + pageGroupSize - 1, totalPages);
 
-      if (side === "left") setLeftInputVisible(false);
-      if (side === "right") setRightInputVisible(false);
-      setJumpPage("");
-    }
-  };
-
-  const handleBlur = (side) => {
-    if (side === "left") setLeftInputVisible(false);
-    if (side === "right") setRightInputVisible(false);
-    setJumpPage("");
-  };
-
+  const visiblePages = Array.from(
+    { length: pageGroupEnd - currentGroupStart + 1 },
+    (_, i) => currentGroupStart + i
+  );
 
   const fetchPolicy = async () => {
     setLoading(true);
@@ -40,6 +26,7 @@ function Policy() {
       const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?page=${page}`);
       setPolicyInfo(res.data.content);
       setTotalPages(res.data.totalPages - 1 || 1);
+      console.log(res.data.content);
     } catch (err) {
       console.error(err);
     } finally {
@@ -79,52 +66,44 @@ function Policy() {
           </PolicyInfoContainer>
         ))}
         <PaginationBox>
-          {page > 3 && (
-            <>
-              <PageNumberBtn onClick={() => setPage(1)}>1</PageNumberBtn>
-              {!leftInputVisible ? (
-                <Dots onClick={() => setLeftInputVisible(true)}>...</Dots>
-              ) : (
-                <PageInput
-                  autoFocus
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={jumpPage}
-                  onChange={(e) => setJumpPage(e.target.value)}
-                  onKeyDown={(e) => handleJump(e, "left")}
-                  onBlur={() => handleBlur("left")}
-                />
-              )}
-            </>
-          )}
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((p) => Math.abs(p - page) <= 2)
-            .map((p) => (
-              <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
-                {p}
-              </PageNumberBtn>
-            ))}
-          {page < totalPages - 2 && (
-            <>
-              {!rightInputVisible ? (
-                <Dots onClick={() => setRightInputVisible(true)}>...</Dots>
-              ) : (
-                <PageInput
-                  autoFocus
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={jumpPage}
-                  onChange={(e) => setJumpPage(e.target.value)}
-                  onKeyDown={(e) => handleJump(e, "right")}
-                  onBlur={() => handleBlur("right")}
-                />
-              )}
-              <PageNumberBtn onClick={() => setPage(totalPages)}>{totalPages}</PageNumberBtn>
-            </>
-          )}
+          <PageNumberBtn onClick={() => setCurrentGroupStart(1)} disabled={currentGroupStart === 1}>
+            &laquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() => setCurrentGroupStart(Math.max(1, currentGroupStart - pageGroupSize))}
+            disabled={currentGroupStart === 1}
+          >
+            &lsaquo;
+          </PageNumberBtn>
+
+          {visiblePages.map((p) => (
+            <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
+              {p}
+            </PageNumberBtn>
+          ))}
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart(
+                Math.min(currentGroupStart + pageGroupSize, totalPages - ((totalPages - 1) % pageGroupSize))
+              )
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &rsaquo;
+          </PageNumberBtn>
+
+          <PageNumberBtn
+            onClick={() =>
+              setCurrentGroupStart(totalPages - ((totalPages - 1) % pageGroupSize) + 1)
+            }
+            disabled={currentGroupStart + pageGroupSize > totalPages}
+          >
+            &raquo;
+          </PageNumberBtn>
         </PaginationBox>
+
       </PolicyMainBox>
 
       {loading && <Loading />}
@@ -217,7 +196,7 @@ const PageNumberBtn = styled.button`
   border: 1px solid #538572;
   border-radius: 10px;
   font-size: 16px;
-  padding: 6px 14px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 0.2s;
   &:hover {
