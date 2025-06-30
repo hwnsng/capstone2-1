@@ -84,8 +84,12 @@ function CommunityDetail() {
       setNewCComment("");
       setReplyTargetId(null);
     } catch (err) {
+      if (localStorage.getItem("accessToken")) {
+        toast.error("대댓글 작성에 실패했습니다.");
+      } else {
+        toast.error("로그인이 필요한 서비스입니다.");
+      }
       console.error("대댓글 작성 실패:", err);
-      toast.error("대댓글 작성에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -140,8 +144,12 @@ function CommunityDetail() {
       setComments(prevComments => [newCommentData, ...prevComments]);
       setNewComment("");
     } catch (err) {
+      if (localStorage.getItem("accessToken")) {
+        toast.error("댓글 작성에 실패했습니다.");
+      } else {
+        toast.error("로그인이 필요한 서비스입니다.");
+      }
       console.error("댓글 작성 실패:", err);
-      toast.error("댓글 작성에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -175,7 +183,14 @@ function CommunityDetail() {
       setLikeCheck(true);
       setLikeCount((prev) => prev + 1);
     } catch (error) {
-      console.error("좋아요 처리 실패:", error.response?.data || error.message);
+      if (error.response?.status === 500) {
+        if (localStorage.getItem("accessToken")) {
+          toast.error("이미 좋아요를 누른 게시글입니다.");
+        } else {
+          toast.error("로그인이 필요합니다.")
+        }
+      }
+      console.error("좋아요 처리 실패:", error.response || error.message);
     } finally {
       setLoading(false);
     }
