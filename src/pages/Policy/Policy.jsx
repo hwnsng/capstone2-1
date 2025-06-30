@@ -57,10 +57,7 @@ function Policy() {
 
         const url = `https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?${queryString}`;
 
-        console.log('직접 만든 URL:', url);
-
         const res = await axios.get(url);
-        console.log(res);
 
         setPolicyInfo(res.data.content || []);
         setTotalPages(res.data.totalPages || 1);
