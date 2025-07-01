@@ -8,7 +8,7 @@ function Policy() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [policyInfo, setPolicyInfo] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentGroupStart, setCurrentGroupStart] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -33,64 +33,64 @@ function Policy() {
     const fetchPolicy = async () => {
       setLoading(true);
       setError(null);
+
       try {
         const { progress, startAge, endAge, organ } = appliedFilters;
+        const paramsObj = {
+          progress,
+          page,
+        };
 
-        const paramsObj = { page, progress };
+        const parsedStartAge = parseInt(startAge, 10);
+        const parsedEndAge = parseInt(endAge, 10);
 
-        if (startAge !== '') {
-          const parsedStartAge = parseInt(startAge, 10);
-          if (!isNaN(parsedStartAge)) paramsObj.startAge = parsedStartAge;
-          else throw new Error('시작 나이는 유효한 숫자여야 합니다.');
-        }
-        if (endAge !== '') {
-          const parsedEndAge = parseInt(endAge, 10);
-          if (!isNaN(parsedEndAge)) paramsObj.endAge = parsedEndAge;
-          else throw new Error('끝 나이는 유효한 숫자여야 합니다.');
-        }
-        if (organ && organ.trim() !== '') {
-          paramsObj.organ = organ.trim();
-        }
-        const queryString = Object.entries(paramsObj)
-          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-          .join('&');
+        if (startAge && isNaN(parsedStartAge)) throw new Error('시작 나이는 유효한 숫자여야 합니다.');
+        if (endAge && isNaN(parsedEndAge)) throw new Error('끝 나이는 유효한 숫자여야 합니다.');
+        if (!isNaN(parsedStartAge)) paramsObj.startAge = parsedStartAge;
+        if (!isNaN(parsedEndAge)) paramsObj.endAge = parsedEndAge;
+        if (organ.trim()) paramsObj.organ = organ.trim();
 
-        const url = `https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?${queryString}`;
+        const queryString = new URLSearchParams(paramsObj).toString();
 
-        const res = await axios.get(url);
+        const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?${queryString}`);
 
         setPolicyInfo(res.data.content || []);
         setTotalPages(res.data.totalPages || 1);
         setTotalCount(res.data.totalElements || 0);
       } catch (err) {
-        console.error('API 요청 실패:', err);
         setError(err.response?.data?.message || err.message || '서버 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
+
     fetchPolicy();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [page, appliedFilters]);
 
+
   const handleSearch = () => {
     const { startAge, endAge } = filters;
 
-    if (startAge !== '' && endAge !== '') {
-      const parsedStartAge = parseInt(startAge, 10);
-      const parsedEndAge = parseInt(endAge, 10);
-      if (isNaN(parsedStartAge) || isNaN(parsedEndAge)) {
-        setError('나이는 유효한 숫자여야 합니다.');
-        return;
-      }
-      if (parsedStartAge > parsedEndAge) {
-        setError('시작 나이는 끝 나이보다 작아야 합니다.');
-        return;
-      }
+    const parsedStartAge = parseInt(startAge, 10);
+    const parsedEndAge = parseInt(endAge, 10);
+
+    if (startAge && isNaN(parsedStartAge)) {
+      setError('시작 나이는 유효한 숫자여야 합니다.');
+      return;
+    }
+    if (endAge && isNaN(parsedEndAge)) {
+      setError('끝 나이는 유효한 숫자여야 합니다.');
+      return;
+    }
+    if (!isNaN(parsedStartAge) && !isNaN(parsedEndAge) && parsedStartAge > parsedEndAge) {
+      setError('시작 나이는 끝 나이보다 작아야 합니다.');
+      return;
     }
 
+    setError(null);
     setAppliedFilters(filters);
-    setPage(1);
+    setPage(0);
   };
 
   return (
