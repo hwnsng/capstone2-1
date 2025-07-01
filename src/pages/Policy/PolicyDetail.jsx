@@ -15,7 +15,7 @@ function PolicyDetail() {
   const fetchPolicyByPages = async () => {
     setLoading(true);
     try {
-      for (let page = 1; page <= maxPage; page++) {
+      for (let page = 0; page < maxPage; page++) {
         const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?page=${page}`);
         const policies = res.data.content;
         const policy = policies.find(p => p.plcyNo.trim() === policyId.trim());

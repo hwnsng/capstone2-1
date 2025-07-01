@@ -46,14 +46,25 @@ function Policy() {
 
         if (startAge && isNaN(parsedStartAge)) throw new Error('시작 나이는 유효한 숫자여야 합니다.');
         if (endAge && isNaN(parsedEndAge)) throw new Error('끝 나이는 유효한 숫자여야 합니다.');
-        if (!isNaN(parsedStartAge)) paramsObj.startAge = parsedStartAge;
-        if (!isNaN(parsedEndAge)) paramsObj.endAge = parsedEndAge;
+        if (!isNaN(parsedStartAge)) {
+          paramsObj.startAge = parsedStartAge;
+          if (isNaN(parsedEndAge)) {
+            paramsObj.endAge = 100;
+          }
+        }
         if (organ.trim()) paramsObj.organ = organ.trim();
 
-        const queryString = new URLSearchParams(paramsObj).toString();
+        console.log('요청 파라미터:', paramsObj);
 
-        const res = await axios.get(`https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my?${queryString}`);
-
+        const res = await axios.get(
+          `https://port-0-backend-springboot-mbhk52lab25c23a5.sel4.cloudtype.app/policy/my`,
+          {
+            params: {
+              ...paramsObj,
+              page: page,
+            },
+          }
+        );
         setPolicyInfo(res.data.content || []);
         setTotalPages(res.data.totalPages || 1);
         setTotalCount(res.data.totalElements || 0);
@@ -114,6 +125,8 @@ function Policy() {
           <label>
             나이:
             <input
+              min={0}
+              max={100}
               type="number"
               placeholder="시작"
               value={filters.startAge}
@@ -121,6 +134,8 @@ function Policy() {
             />
             ~
             <input
+              min={0}
+              max={100}
               type="number"
               placeholder="끝"
               value={filters.endAge}
@@ -176,7 +191,11 @@ function Policy() {
             ‹
           </PageNumberBtn>
           {visiblePages.map((p) => (
-            <PageNumberBtn key={p} onClick={() => setPage(p)} className={p === page ? 'active' : ''}>
+            <PageNumberBtn
+              key={p}
+              onClick={() => setPage(p - 1)}
+              className={p === page + 1 ? 'active' : ''}
+            >
               {p}
             </PageNumberBtn>
           ))}
