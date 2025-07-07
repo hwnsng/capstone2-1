@@ -56,15 +56,15 @@ function Ai() {
 
       sessionIdRef.current = sessionId;
 
-      const res = await axios.get(`http://127.0.0.1:8000/history`);
-      const conversations = res.data.conversations || [];
+      // const res = await axios.get(`http://127.0.0.1:8000/history`);
+      // const conversations = res.data.conversations || [];
 
-      const formattedHistory = conversations.flatMap((item) => [
-        { type: 'user', text: item.user_input },
-        { type: 'ai', text: item.bot_response?.source_summary || '답변이 없습니다.' },
-      ]);
+      // const formattedHistory = conversations.flatMap((item) => [
+      //   { type: 'user', text: item.user_input },
+      //   { type: 'ai', text: item.bot_response?.source_summary || '답변이 없습니다.' },
+      // ]);
 
-      setChatHistory(formattedHistory);
+      // setChatHistory(formattedHistory);
 
       setTimeout(() => {
         scrollToBottom();
@@ -94,7 +94,7 @@ function Ai() {
       const postData = { query: currentUserChat };
       if (sessionIdRef.current) postData.sessionId = sessionIdRef.current;
 
-      const res = await axios.post('http://127.0.0.1:8000/query', postData);
+      const res = await axios.post('https://port-0-ai-server-wls-mcpslki2ccb5c8fd.sel5.cloudtype.app/query', postData);
       const fullText = res.data.source_summary || '답변이 없습니다.';
 
       console.log(res);
@@ -256,6 +256,7 @@ const AiChatInputBox = styled.div`
     width: 900px;
     align-items: center;
     border: 1px solid #538572;
+    background-color: white;
     border-radius: 50px;
     background: white;
     padding: 5px 10px;
