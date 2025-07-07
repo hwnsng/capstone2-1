@@ -97,7 +97,6 @@ function Ai() {
       const res = await axios.post('https://port-0-ai-server-wls-mcpslki2ccb5c8fd.sel5.cloudtype.app/query', postData);
       const fullText = res.data.source_summary || '답변이 없습니다.';
 
-      console.log(res);
       if (!sessionIdRef.current && res.data.session_id) {
         sessionIdRef.current = res.data.session_id;
         localStorage.setItem('sessionId', res.data.session_id);
