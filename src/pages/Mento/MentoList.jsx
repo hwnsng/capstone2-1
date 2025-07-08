@@ -13,8 +13,10 @@ function MentoList() {
   const getMentos = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`, {
-      });
+      const res = await axios.get(
+        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`,
+        {}
+      );
       setMentos(res.data);
       setLoading(false);
     } catch (err) {
@@ -31,7 +33,9 @@ function MentoList() {
     <MentoListContainer>
       <MentoListMainBox>
         <MentoListBtnBox>
-          <button type="button" onClick={() => navigate('/mentocreate')}>멘토 작성하기</button>
+          <button type="button" onClick={() => navigate('/mentocreate')}>
+            멘토 작성하기
+          </button>
         </MentoListBtnBox>
         <MentoListMenuBox>
           {mentos.map((mento, idx) => (
@@ -47,7 +51,7 @@ function MentoList() {
       </MentoListMainBox>
       {loading && <Loading />}
     </MentoListContainer>
-  )
+  );
 }
 
 export default MentoList;
@@ -71,7 +75,7 @@ const MentoListBtnBox = styled.div`
   height: 60px;
   justify-content: right;
   align-items: center;
-  button{
+  button {
     display: flex;
     width: 140px;
     height: 40px;
@@ -79,8 +83,8 @@ const MentoListBtnBox = styled.div`
     align-items: center;
     border: 1px solid rgb(54, 98, 81);
     border-radius: 30px;
-    background-color:rgb(54, 98, 81);
-    color: white; 
+    background-color: rgb(54, 98, 81);
+    color: white;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
@@ -93,5 +97,5 @@ const MentoListMenuBox = styled.div`
   gap: 30px;
   width: 100%;
   margin-top: 20px;
+  margin-bottom: 40px;
 `;
-
