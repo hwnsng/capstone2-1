@@ -54,7 +54,7 @@ function HouseDetail() {
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleEditSubmit = async e => {
     e.preventDefault();
     try {
       await axios.put(
@@ -82,7 +82,13 @@ function HouseDetail() {
 
   const confirmDelete = () => {
     toast.info(
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <span style={{ marginBottom: '10px' }}>정말로 삭제하시겠습니까?</span>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
@@ -93,7 +99,9 @@ function HouseDetail() {
                   `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/houses/${HouseId}`,
                   {
                     headers: {
-                      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                      Authorization: `Bearer ${localStorage.getItem(
+                        'accessToken'
+                      )}`,
                     },
                   }
                 );
@@ -199,26 +207,32 @@ function HouseDetail() {
               ))}
             </div>
           </SubImageSection>
+          <ButtonBox>
+            <button type="button">대화하기</button>
+          </ButtonBox>
         </>
       ) : (
-        <form onSubmit={handleEditSubmit} style={{ width: '100%', height: '100vh' }}>
+        <form
+          onSubmit={handleEditSubmit}
+          style={{ width: '100%', height: '100vh' }}
+        >
           <ContentBox style={{ marginTop: '50px' }}>
             제목
             <StyledInput
               value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
+              onChange={e => setEditTitle(e.target.value)}
               placeholder="제목을 입력하세요"
             />
             내용
             <StyledInput
               value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
+              onChange={e => setEditContent(e.target.value)}
               placeholder="내용을 입력하세요"
             />
             지역
             <StyledSelect
               value={editRegion}
-              onChange={(e) => setEditRegion(e.target.value)}
+              onChange={e => setEditRegion(e.target.value)}
             >
               <option value="다인면">다인면</option>
               <option value="안사면">안사면</option>
@@ -242,11 +256,17 @@ function HouseDetail() {
             가격
             <StyledInput
               value={editPrice}
-              onChange={(e) => setEditPrice(e.target.value)}
+              onChange={e => setEditPrice(e.target.value)}
               placeholder="가격을 입력하세요"
             />
             <EditSubmitBtnBox>
-              <button type="button" onClick={() => setEditMode(false)} style={{ backgroundColor: "#ffffff", color: "black" }}>취소</button>
+              <button
+                type="button"
+                onClick={() => setEditMode(false)}
+                style={{ backgroundColor: '#ffffff', color: 'black' }}
+              >
+                취소
+              </button>
               <button type="submit">수정 완료</button>
             </EditSubmitBtnBox>
           </ContentBox>
@@ -343,7 +363,6 @@ const SubImageSection = styled.div`
     display: flex;
     gap: 10px;
     margin-top: 12px;
-    overflow-x: auto;
     img {
       width: 80px;
       height: 70px;
@@ -388,5 +407,26 @@ const StyledSelect = styled.select`
   &:focus {
     border-color: #3b6350;
     box-shadow: 0 0 0 2px rgba(59, 99, 80, 0.2);
+  }
+`;
+
+const ButtonBox = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: right;
+  padding-bottom: 30px;
+  button {
+    background-color: #538572;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover {
+      background-color: #3b6350;
+    }
   }
 `;

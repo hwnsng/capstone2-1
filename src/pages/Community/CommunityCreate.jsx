@@ -14,7 +14,7 @@ function CommunityCreate() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = e => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
@@ -27,7 +27,7 @@ function CommunityCreate() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     if (!category) return toast.warning('카테고리를 선택해주세요.');
@@ -47,19 +47,20 @@ function CommunityCreate() {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             'Content-Type': 'multipart/form-data',
           },
         }
       );
       navigate('/community?category=0');
-      toast.success("게시글이 등록되었습니다.");
+      toast.success('게시글이 등록되었습니다.');
     } catch (err) {
-      if (localStorage.getItem("accessToken")) {
-        const errorMessage = err.response?.data?.message || '게시글 등록 중 오류가 발생했습니다.';
+      if (localStorage.getItem('accessToken')) {
+        const errorMessage =
+          err.response?.data?.message || '게시글 등록 중 오류가 발생했습니다.';
         toast.error(errorMessage);
       } else {
-        toast.error("로그인이 필요한 서비스입니다.");
+        toast.error('로그인이 필요한 서비스입니다.');
       }
       console.error('게시글 등록 실패:', err.response?.data || err.message);
     } finally {
@@ -75,9 +76,11 @@ function CommunityCreate() {
           <Select
             name="category"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={e => setCategory(e.target.value)}
           >
-            <option value="" disabled>카테고리를 선택하세요</option>
+            <option value="" disabled>
+              카테고리를 선택하세요
+            </option>
             <option value="BLOG">귀촌 블로그</option>
             <option value="SHARE">귀촌 정보 공유</option>
             <option value="QNA">귀촌 / 농사 Q&A</option>
@@ -90,7 +93,7 @@ function CommunityCreate() {
             placeholder="제목을 입력하세요"
             value={title}
             maxLength={25}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={e => setTitle(e.target.value)}
           />
 
           <FieldLabel style={{ marginTop: 16 }}>내용</FieldLabel>
@@ -98,17 +101,13 @@ function CommunityCreate() {
             name="content"
             placeholder="내용을 입력해주세요"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={e => setContent(e.target.value)}
           />
 
           <FieldLabel style={{ marginTop: 16 }}>이미지 (선택)</FieldLabel>
           <UploadLabel>
             이미지 선택
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
+            <input type="file" accept="image/*" onChange={handleImageChange} />
           </UploadLabel>
 
           {preview && (
@@ -121,11 +120,9 @@ function CommunityCreate() {
             <ComCreDelBtn
               type="button"
               value="뒤로"
-              onClick={() => navigate(-1)} />
-            <ComCreBtn
-              type="submit"
-              value="확인"
+              onClick={() => navigate(-1)}
             />
+            <ComCreBtn type="submit" value="확인" />
           </ComCreBtnBox>
         </form>
       </MainComCreBox>
@@ -222,8 +219,8 @@ const ComCreDelBtn = styled.input`
   cursor: pointer;
   margin-left: 10px;
   transition: all 0.2s;
-  &:hover{
-    background-color:rgb(228, 239, 235);
+  &:hover {
+    background-color: rgb(228, 239, 235);
   }
 `;
 
@@ -238,7 +235,7 @@ const ComCreBtn = styled.input`
   cursor: pointer;
   margin-left: 10px;
   transition: all 0.2s;
-  &:hover{
-    background-color:rgb(63, 106, 89);
+  &:hover {
+    background-color: rgb(63, 106, 89);
   }
 `;

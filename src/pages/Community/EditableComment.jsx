@@ -9,18 +9,18 @@ function EditableComment({ comment, onDelete, onEdit }) {
   const menuRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = e => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setShowMenu(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSave = () => {
-    if (editText.trim() === "") {
-      toast.warning("댓글 내용을 입력해주세요.");
+    if (editText.trim() === '') {
+      toast.warning('댓글 내용을 입력해주세요.');
       return;
     }
     onEdit(editText);
@@ -29,8 +29,16 @@ function EditableComment({ comment, onDelete, onEdit }) {
 
   const confirmCommentDelete = () => {
     toast.info(
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <span style={{ marginBottom: '10px' }}>정말로 댓글을 삭제하시겠습니까?</span>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ marginBottom: '10px' }}>
+          정말로 댓글을 삭제하시겠습니까?
+        </span>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={() => {
@@ -80,11 +88,13 @@ function EditableComment({ comment, onDelete, onEdit }) {
         <>
           <EditTextarea
             value={editText}
-            onChange={(e) => setEditText(e.target.value)}
+            onChange={e => setEditText(e.target.value)}
           />
           <ButtonGroup>
             <SaveButton onClick={handleSave}>저장</SaveButton>
-            <CancelButton onClick={() => setIsEditing(false)}>취소</CancelButton>
+            <CancelButton onClick={() => setIsEditing(false)}>
+              취소
+            </CancelButton>
           </ButtonGroup>
         </>
       ) : (
@@ -95,8 +105,17 @@ function EditableComment({ comment, onDelete, onEdit }) {
               <MoreButton onClick={() => setShowMenu(!showMenu)}>⋯</MoreButton>
               {showMenu && (
                 <DropdownMenu>
-                  <DropdownItem onClick={() => { setIsEditing(true); setShowMenu(false); }}>수정</DropdownItem>
-                  <DropdownItem onClick={confirmCommentDelete}>삭제</DropdownItem>
+                  <DropdownItem
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowMenu(false);
+                    }}
+                  >
+                    수정
+                  </DropdownItem>
+                  <DropdownItem onClick={confirmCommentDelete}>
+                    삭제
+                  </DropdownItem>
                 </DropdownMenu>
               )}
             </DropdownWrapper>
@@ -203,7 +222,7 @@ const DropdownMenu = styled.div`
   background: white;
   border: 1px solid #ccc;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
 `;
 
