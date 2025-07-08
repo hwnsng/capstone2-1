@@ -29,6 +29,7 @@ function Profile() {
     if (file) {
       await handleImageUpload(file);
     }
+    window.location.reload();
   };
 
   const handleChangeMento = async () => {
