@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -10,18 +10,20 @@ import useProfile from '@/hooks/useProfile';
 function MentoDetail() {
   const navigate = useNavigate();
   const [mentoName, setMentoName] = useState();
-  const [mentoIntroduce, setMentoIntroduce] = useState("");
+  const [mentoIntroduce, setMentoIntroduce] = useState('');
   const [mentoProfile, setMentoProfile] = useState();
   const [loading, setLoading] = useState(false);
   const [mentoMe, setMentoMe] = useState(null);
   const path = window.location.pathname;
-  const mentoId = path.split("/")[2];
+  const mentoId = path.split('/')[2];
   const { name } = useProfile();
 
   const getMentos = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`);
+      const res = await axios.get(
+        `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/mentors`
+      );
       const target = res.data.find(m => m.mentor_id == mentoId);
       if (target) {
         setMentoName(target.mentor_name);
@@ -37,47 +39,74 @@ function MentoDetail() {
 
   const handleChatGo = async () => {
     toast.info(
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <span style={{ marginBottom: '10px' }}>채팅을 시작하시겠습니까?</span>
         <div>
           <button
             onClick={async () => {
               toast.dismiss();
               try {
-                await axios.post(`https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`, {
-                  mentor_id: parseInt(mentoId),
-                }, {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                await axios.post(
+                  `https://port-0-backend-nestjs-754g42aluumga8c.sel5.cloudtype.app/chats`,
+                  {
+                    mentor_id: parseInt(mentoId),
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem(
+                        'accessToken'
+                      )}`,
+                    },
                   }
-                });
+                );
                 navigate('/chat');
               } catch (err) {
                 if (err.status == 401) {
-                  toast.error("로그인이 필요한 서비스입니다");
+                  toast.error('로그인이 필요한 서비스입니다');
                 }
                 console.error(err);
               }
             }}
-            style={{ marginRight: '10px', backgroundColor: '#538572', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+            style={{
+              marginRight: '10px',
+              backgroundColor: '#538572',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
           >
             확인
           </button>
           <button
             onClick={() => toast.dismiss()}
-            style={{ backgroundColor: '#ccc', color: '#333', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer' }}
+            style={{
+              backgroundColor: '#ccc',
+              color: '#333',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
           >
             취소
           </button>
         </div>
       </div>,
       {
-        position: "top-center",
+        position: 'top-center',
         autoClose: false,
         closeOnClick: false,
         draggable: false,
         hideProgressBar: true,
-        closeButton: false
+        closeButton: false,
       }
     );
   };
@@ -105,16 +134,16 @@ function MentoDetail() {
           </ProfileBox>
           {mentoMe === false && (
             <ButtonBox>
-              <button type="button" onClick={handleChatGo}>대화하기</button>
+              <button type="button" onClick={handleChatGo}>
+                대화하기
+              </button>
             </ButtonBox>
           )}
         </HeaderBox>
         <SectionTitle>
           <h1>자기소개</h1>
         </SectionTitle>
-        <IntroduceBox>
-          {mentoIntroduce}
-        </IntroduceBox>
+        <IntroduceBox>{mentoIntroduce}</IntroduceBox>
       </MentoDetailMainBox>
       {loading && <Loading />}
     </MentoDetailContainer>
@@ -136,7 +165,7 @@ const MentoDetailMainBox = styled.div`
   background: white;
   border-radius: 16px;
   padding: 40px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 `;
 
 const HeaderBox = styled.div`

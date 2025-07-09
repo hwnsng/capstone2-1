@@ -24,27 +24,43 @@ function Header() {
         setDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogoClick = () => {
     navigate('/');
   };
 
+  const handleChatGo = () => {
+    navigate('/chat');
+  };
   const handleConfirmLogout = () => {
     toast(
       ({ closeToast }) => (
         <div>
           <p>정말로 로그아웃 하시겠습니까?</p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginTop: 10,
+            }}
+          >
             <CancelButton onClick={closeToast}>취소</CancelButton>
-            <ConfirmButton onClick={() => { handleLogout(); closeToast(); }}>확인</ConfirmButton>
+            <ConfirmButton
+              onClick={() => {
+                handleLogout();
+                closeToast();
+              }}
+            >
+              확인
+            </ConfirmButton>
           </div>
         </div>
       ),
       {
-        position: "top-center",
+        position: 'top-center',
         autoClose: false,
         closeOnClick: false,
         closeButton: false,
@@ -60,31 +76,68 @@ function Header() {
           <LogoImg src={Logo} alt="로고" onClick={handleLogoClick} />
         </LogoBox>
         <Nav>
-          <Link to="/policy" className={location.pathname.startsWith("/policy") ? "active" : ""}>지원 정책</Link>
-          <Link to="/community?category=0" className={location.pathname.startsWith("/community") ? "active" : ""}>커뮤니티</Link>
-          <Link to="/house" className={location.pathname.startsWith("/house") ? "active" : ""}>주거 공고</Link>
-          <Link to="/aichat" className={location.pathname === "/aichat" ? "active" : ""}>AI 상담</Link>
-          <Link to="/mentolist" className={location.pathname.startsWith("/mento") ? "active" : ""}>멘토/멘티</Link>
+          <Link
+            to="/policy"
+            className={location.pathname.startsWith('/policy') ? 'active' : ''}
+          >
+            지원 정책
+          </Link>
+          <Link
+            to="/community?category=0"
+            className={
+              location.pathname.startsWith('/community') ? 'active' : ''
+            }
+          >
+            커뮤니티
+          </Link>
+          <Link
+            to="/house"
+            className={location.pathname.startsWith('/house') ? 'active' : ''}
+          >
+            주거 공고
+          </Link>
+          <Link
+            to="/aichat"
+            className={location.pathname === '/aichat' ? 'active' : ''}
+          >
+            AI 상담
+          </Link>
+          <Link
+            to="/mentolist"
+            className={location.pathname.startsWith('/mento') ? 'active' : ''}
+          >
+            멘토/멘티
+          </Link>
           {isLoggedIn ? (
             <DropdownWrapper ref={dropdownRef}>
               {profileImage && (
                 <ProfileImg
                   src={profileImage}
                   alt="프로필사진"
-                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  onClick={() => setDropdownOpen(prev => !prev)}
                 />
               )}
               {dropdownOpen && (
                 <DropdownMenu>
-                  <DropdownItem onClick={() => navigate("/profile")}>내 프로필</DropdownItem>
-                  <DropdownItem onClick={handleConfirmLogout}>로그아웃</DropdownItem>
+                  <DropdownItem onClick={() => navigate('/profile')}>
+                    내 프로필
+                  </DropdownItem>
+                  <DropdownItem onClick={handleChatGo}>내 채팅</DropdownItem>
+                  <DropdownItem onClick={handleConfirmLogout}>
+                    로그아웃
+                  </DropdownItem>
                 </DropdownMenu>
               )}
             </DropdownWrapper>
           ) : (
             <Link
               to="/signin"
-              className={location.pathname === "/signin" || location.pathname === "/signup" ? "active" : ""}
+              className={
+                location.pathname === '/signin' ||
+                location.pathname === '/signup'
+                  ? 'active'
+                  : ''
+              }
             >
               로그인
             </Link>
@@ -166,7 +219,7 @@ const DropdownMenu = styled.div`
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1000;
 `;
