@@ -207,9 +207,6 @@ function HouseDetail() {
               ))}
             </div>
           </SubImageSection>
-          <ButtonBox>
-            <button type="button">대화하기</button>
-          </ButtonBox>
         </>
       ) : (
         <form
