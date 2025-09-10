@@ -80,22 +80,25 @@ function Ai() {
     scrollToBottom();
   }, [chatHistory, aiTypingText]);
 
-  const handleInputUser = async (e) => {
+  const handleInputUser = async e => {
     e.preventDefault();
     if (!userChat.trim()) return;
 
     const currentUserChat = userChat;
     setUserChat('');
-    setChatHistory((prev) => [...prev, { type: 'user', text: currentUserChat }]);
+    setChatHistory(prev => [...prev, { type: 'user', text: currentUserChat }]);
     setAiTypingText('');
     setShowTyping(true);
 
     try {
-      const postData = { query: currentUserChat };
+      const postData = { question: currentUserChat };
       if (sessionIdRef.current) postData.sessionId = sessionIdRef.current;
 
-      const res = await axios.post('https://port-0-ai-server-wls-mcpslki2ccb5c8fd.sel5.cloudtype.app/query', postData);
-      const fullText = res.data.source_summary || '답변이 없습니다.';
+      const res = await axios.post(
+        'https://port-0-aiaiai-mcpslki2ccb5c8fd.sel5.cloudtype.app/query',
+        postData
+      );
+      const fullText = res.data.answer || '답변이 없습니다.';
 
       if (!sessionIdRef.current && res.data.session_id) {
         sessionIdRef.current = res.data.session_id;
@@ -105,21 +108,23 @@ function Ai() {
       typeTextEffect(fullText);
     } catch (err) {
       console.error('handleInputUser 오류:', err);
-      typeTextEffect('현재 AI 서버가 정상 동작하지 않습니다.\n잠시 후 다시 시도 해 주세요.');
+      typeTextEffect(
+        '현재 AI 서버가 정상 동작하지 않습니다.\n잠시 후 다시 시도 해 주세요.'
+      );
     }
   };
 
-  const typeTextEffect = (text) => {
+  const typeTextEffect = text => {
     let index = 0;
     setAiTypingText('');
     setShowTyping(true);
     const typingInterval = setInterval(() => {
-      setAiTypingText((prev) => {
+      setAiTypingText(prev => {
         const nextChar = text.charAt(index);
         index++;
         if (index >= text.length) {
           clearInterval(typingInterval);
-          setChatHistory((prev) => [...prev, { type: 'ai', text }]);
+          setChatHistory(prev => [...prev, { type: 'ai', text }]);
           setAiTypingText('');
           setShowTyping(false);
         }
@@ -128,7 +133,7 @@ function Ai() {
     }, 20);
   };
 
-  const handleInputChange = (e) => setUserChat(e.target.value);
+  const handleInputChange = e => setUserChat(e.target.value);
 
   return (
     <ErrorBoundary>
